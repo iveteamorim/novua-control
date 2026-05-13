@@ -1,6 +1,11 @@
 import Link from "next/link";
 
-import { getDashboardSnapshot, getSourceOverview } from "@/lib/control/engine";
+import {
+  getArtifactsBySource,
+  getDashboardSnapshot,
+  getSourceOverview,
+} from "@/lib/control/engine";
+import type { ControlArtifact, SourceOverview } from "@/lib/control/types";
 
 const severityStyles = {
   critical: "border-rose-300 bg-rose-50 text-rose-700",
@@ -9,11 +14,15 @@ const severityStyles = {
 };
 
 export default async function Home() {
-  const [snapshot, sourceOverview] = await Promise.all([
+  const [snapshot, sourceOverview, artifactsBySource] = await Promise.all([
     getDashboardSnapshot(),
     getSourceOverview(),
+    getArtifactsBySource(),
   ]);
   const topAlert = snapshot.primaryAlert;
+  const sourceModes = Object.fromEntries(
+    sourceOverview.map((source) => [source.source, source.mode]),
+  ) as Record<"github" | "vercel" | "linear", "seed" | "live">;
 
   const findArtifact = (id: string) =>
     topAlert.artifacts.find((artifact) => artifact.id === id);
@@ -23,6 +32,21 @@ export default async function Home() {
   const blockedDeploy = findArtifact("deploy-web-checkout");
   const blockedTicket = findArtifact("ticket-linear-142");
   const blockedFlag = findArtifact("flag-checkout-v2");
+  const githubEvidence = pickPrimarySourceArtifact(
+    artifactsBySource.github,
+    "github",
+    blockedPr,
+  );
+  const vercelEvidence = pickPrimarySourceArtifact(
+    artifactsBySource.vercel,
+    "vercel",
+    blockedDeploy,
+  );
+  const linearEvidence = pickPrimarySourceArtifact(
+    artifactsBySource.linear,
+    "linear",
+    blockedTicket,
+  );
 
   const affectedSystems = Array.from(
     new Set(topAlert.artifacts.map((artifact) => artifact.service)),
@@ -32,24 +56,35 @@ export default async function Home() {
 
   const timeline = [
     {
-      at: blockedPr?.updatedAt ?? "19h ago",
-      title: "PR pending review",
+      at: githubEvidence?.updatedAt ?? "19h ago",
+      title:
+        githubEvidence && isLiveArtifact(githubEvidence) && isEscalationRelevantArtifact(githubEvidence)
+          ? "Live GitHub signal detected"
+          : "PR pending review",
       body:
-        blockedPr?.summary ??
+        githubEvidence?.summary ??
         "Critical API contract change has been waiting too long without a backend owner.",
     },
     {
-      at: blockedDeploy?.updatedAt ?? "4h ago",
-      title: "Deployment blocked",
+      at:
+        vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
+          ? vercelEvidence.updatedAt
+          : blockedDeploy?.updatedAt ?? "4h ago",
+      title:
+        vercelEvidence && isLiveArtifact(vercelEvidence) && isEscalationRelevantArtifact(vercelEvidence)
+          ? "Live Vercel signal detected"
+          : "Deployment blocked",
       body:
-        blockedDeploy?.summary ??
+        (vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
+          ? vercelEvidence.summary
+          : blockedDeploy?.summary) ??
         "Production deployment is blocked while the unresolved dependency remains open.",
     },
     {
-      at: blockedTicket?.updatedAt ?? "2h ago",
+      at: linearEvidence?.updatedAt ?? "2h ago",
       title: "Downstream ticket delayed",
       body:
-        blockedTicket?.summary ??
+        linearEvidence?.summary ??
         "Customer-facing release work is blocked by the deployment delay.",
     },
     {
@@ -60,11 +95,31 @@ export default async function Home() {
   ];
 
   const criticalSignals = [
-    "PR pending review for 19h",
-    "frontend deploy blocked for 4h",
-    "customer-facing launch ticket unresolved",
-    "feature flag rollout still queued",
-    "no backend owner explicitly assigned",
+    buildSignalSummary(
+      sourceModes.github,
+      githubEvidence,
+      "Critical PR pending review for 19h",
+    ),
+    buildSignalSummary(
+      sourceModes.vercel,
+      vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
+        ? vercelEvidence
+        : null,
+      "Frontend deploy blocked for 4h",
+    ),
+    buildSignalSummary(
+      sourceModes.linear,
+      linearEvidence,
+      "Customer-facing launch ticket unresolved",
+    ),
+    buildSignalSummary(
+      "seed",
+      blockedFlag,
+      "Feature flag rollout still queued",
+    ),
+    githubEvidence?.owner
+      ? `${githubEvidence.owner} currently owns the upstream review path`
+      : "No backend owner explicitly assigned",
   ];
 
   return (
@@ -104,23 +159,32 @@ export default async function Home() {
 
           <div className="rounded-[1.75rem] border border-black/6 bg-[#f7f7f4] p-5">
             <p className="text-xs uppercase tracking-[0.3em] text-[#8d8176]">
-              Live signal flow
+              Connected evidence
             </p>
             <div className="mt-4 space-y-3">
               <SignalStep
-                source="GitHub"
-                title="PR waiting 19h"
-                detail="checkout-api-contract has no backend owner"
+                source={`GitHub · ${sourceModes.github}`}
+                title={githubEvidence?.label ?? "PR waiting on review"}
+                detail={
+                  githubEvidence?.summary ??
+                  "checkout-api-contract has no backend owner"
+                }
               />
               <SignalStep
-                source="Vercel"
-                title="Deploy blocked"
-                detail="web-checkout-production cannot ship"
+                source={`Vercel · ${sourceModes.vercel}`}
+                title={vercelEvidence?.label ?? "Deploy blocked"}
+                detail={
+                  vercelEvidence?.summary ??
+                  "web-checkout-production cannot ship"
+                }
               />
               <SignalStep
-                source="Linear"
-                title="Ticket unresolved"
-                detail="launch work stays blocked downstream"
+                source={`Linear · ${sourceModes.linear}`}
+                title={linearEvidence?.label ?? "Ticket unresolved"}
+                detail={
+                  linearEvidence?.summary ??
+                  "launch work stays blocked downstream"
+                }
               />
               <SignalStep
                 source="Control"
@@ -308,6 +372,12 @@ export default async function Home() {
                 title={getSourceTitle(source.source)}
                 subtitle={getSourceSubtitle(source.source)}
                 value={`${source.signals} signals · ${source.events} events · ${source.artifacts} artifacts`}
+                headline={getSourceEvidenceHeadline(
+                  source.source,
+                  githubEvidence,
+                  vercelEvidence,
+                  linearEvidence,
+                )}
                 mode={source.mode}
               />
             ))}
@@ -316,6 +386,77 @@ export default async function Home() {
       </div>
     </main>
   );
+}
+
+function isLiveArtifact(artifact: ControlArtifact) {
+  return artifact.id.startsWith("live-");
+}
+
+function isEscalationRelevantArtifact(artifact: ControlArtifact) {
+  return ["blocked", "failed", "waiting_review", "queued"].includes(artifact.status);
+}
+
+function getArtifactPriority(artifact: ControlArtifact) {
+  const statusScore = {
+    blocked: 5,
+    failed: 5,
+    waiting_review: 4,
+    queued: 3,
+    in_progress: 2,
+    healthy: 1,
+  }[artifact.status];
+
+  return statusScore + (artifact.owner ? 0 : 0.5);
+}
+
+function pickPrimarySourceArtifact(
+  artifacts: ControlArtifact[],
+  source: "github" | "vercel" | "linear",
+  fallback?: ControlArtifact,
+) {
+  const liveArtifacts = artifacts.filter(
+    (artifact) => artifact.source === source && isLiveArtifact(artifact),
+  );
+  const riskyLiveArtifacts = liveArtifacts.filter(isEscalationRelevantArtifact);
+  const candidates = (
+    riskyLiveArtifacts.length > 0
+      ? riskyLiveArtifacts
+      : liveArtifacts.length > 0
+        ? liveArtifacts
+        : artifacts
+  ).slice();
+
+  candidates.sort((left, right) => getArtifactPriority(right) - getArtifactPriority(left));
+
+  if (riskyLiveArtifacts.length === 0 && fallback) {
+    return fallback;
+  }
+
+  return candidates[0] ?? fallback ?? null;
+}
+
+function buildSignalSummary(
+  mode: SourceOverview["mode"],
+  artifact: ControlArtifact | null | undefined,
+  fallback: string,
+) {
+  if (!artifact) {
+    return fallback;
+  }
+
+  const prefix = mode === "live" ? "Live signal:" : "Seed signal:";
+  return `${prefix} ${artifact.summary}`;
+}
+
+function getSourceEvidenceHeadline(
+  source: "github" | "vercel" | "linear",
+  githubEvidence: ControlArtifact | null,
+  vercelEvidence: ControlArtifact | null,
+  linearEvidence: ControlArtifact | null,
+) {
+  if (source === "github") return githubEvidence?.label ?? "No GitHub evidence";
+  if (source === "vercel") return vercelEvidence?.label ?? "No Vercel evidence";
+  return linearEvidence?.label ?? "No Linear evidence";
 }
 
 function getSourceTitle(source: "github" | "vercel" | "linear") {
@@ -464,11 +605,13 @@ function CompactSourceCard({
   title,
   subtitle,
   value,
+  headline,
   mode,
 }: {
   title: string;
   subtitle: string;
   value: string;
+  headline: string;
   mode: "seed" | "live";
 }) {
   return (
@@ -486,6 +629,7 @@ function CompactSourceCard({
         </span>
       </div>
       <h3 className="mt-2 text-lg font-semibold text-[#17120f]">{title}</h3>
+      <p className="mt-2 text-sm font-medium text-[#2d241d]">{headline}</p>
       <p className="mt-3 text-sm text-[#615850]">{value}</p>
     </div>
   );
