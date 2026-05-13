@@ -273,6 +273,13 @@ export const controlDataset: ControlDataset = {
       description:
         "When one blocked artifact holds multiple downstream artifacts, escalate immediately.",
     },
+    {
+      id: "rule-release-owner-fallback",
+      title: "Release owner fallback missing",
+      points: 14,
+      description:
+        "Critical release paths should always have an explicit fallback owner when the primary reviewer is missing.",
+    },
   ],
   alertSeeds: [
     {
@@ -281,7 +288,7 @@ export const controlDataset: ControlDataset = {
       summary:
         "Frontend deployment is blocked by an unresolved API dependency and customer-facing launch ticket.",
       recommendedAction:
-        "Assign a backend owner within the next hour or rollback the checkout flag from the release train.",
+        "Assign a backend owner and explicit release fallback within the next hour or rollback the checkout flag from the release train.",
       owner: "Release Captain",
       artifactIds: [
         "service-checkout",
@@ -297,6 +304,7 @@ export const controlDataset: ControlDataset = {
         "rule-customer-facing-ticket-blocked",
         "rule-release-train-dependency",
         "rule-missing-owner",
+        "rule-release-owner-fallback",
       ],
     },
     {
@@ -363,7 +371,7 @@ export const controlDataset: ControlDataset = {
       actor: "Novua Control",
       action: "Recommended next action",
       details:
-        "Suggested assigning backend owner or rolling back checkout-v2 feature flag.",
+        "Suggested assigning backend owner, naming a release fallback, or rolling back checkout-v2 feature flag.",
     },
     {
       id: "audit-6",
