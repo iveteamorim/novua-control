@@ -1,36 +1,190 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Novua Control
 
-## Getting Started
+Operational execution intelligence for product and engineering teams.
 
-First, run the development server:
+Novua Control detects release bottlenecks, ownership gaps, and deployment risk across engineering workflows. It ingests signals from pull requests, deployments, and tickets, builds dependency context, scores operational risk deterministically, and surfaces explainable decision alerts.
+
+## Problem
+
+Modern teams execute across fragmented systems: GitHub, deployment platforms, ticketing tools, and internal workflows. Important blockers are often distributed across these systems, which makes execution risk hard to see until delivery is already delayed.
+
+Teams do not need another passive dashboard. They need a decision layer that makes operational bottlenecks visible before they become release failures.
+
+## V1 Scope
+
+This first version is intentionally narrow:
+
+- GitHub pull requests
+- Vercel deployments and rollout gates
+- Linear-style tickets
+- Dependency graph across engineering artifacts
+- Deterministic risk scoring
+- Explainable decision alerts
+- Audit trail for escalations, ownership, and state changes
+
+AI is assistive in this product. It explains context and recommended action. Escalation logic remains explicit and auditable.
+
+## Core Capabilities
+
+### Event ingestion
+
+Operational events enter from source systems and are normalized into one internal view:
+
+- PR review waiting
+- Deployment blocked
+- Deployment failed
+- Ticket blocked
+- Rollout queued
+
+### Dependency graph
+
+Artifacts are linked across systems so the engine can understand execution paths:
+
+`PR blocked -> deployment delayed -> ticket unresolved -> release risk`
+
+### Deterministic risk scoring
+
+Risk is computed through policy rules, not opaque model output. Example triggers include:
+
+- Critical PR stale for more than 12 hours
+- Production deploy blocked for more than 4 hours
+- Customer-facing ticket unresolved
+- Missing explicit owner
+- Failed canary deployment
+- Release train dependency chain blocked
+
+### Decision alerts
+
+Alerts are not generic notifications. Each one answers:
+
+- What is blocked
+- Why it escalated
+- Which artifacts are involved
+- Who should act next
+- What action is recommended now
+
+### Audit trail
+
+Every escalation keeps a trace of:
+
+- triggering events
+- ownership changes
+- policy evaluations
+- state changes
+
+## Architecture
+
+Current implementation lives under `src/lib/control`:
+
+- `types.ts` defines the domain model
+- `fixtures.ts` contains the v1 seeded execution dataset
+- `engine.ts` hydrates alerts, applies deterministic scoring, and prepares dashboard snapshots
+
+The UI is intentionally a consumer of the engine, not the source of truth.
+
+## Product Positioning
+
+Novua Control is not:
+
+- another chatbot
+- a generic AI assistant
+- a passive engineering dashboard
+
+Novua Control is:
+
+- an operational decision layer for engineering execution
+- an internal system for release bottleneck detection
+- a full-stack product showing event-driven reasoning, ownership tracking, and explainable escalation
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Live Connectors
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The default demo keeps the seeded execution scenario so the product stays understandable on first load.
 
-## Learn More
+You can layer live source signals on top of that seed data by creating a local `.env.local` from `.env.example`.
 
-To learn more about Next.js, take a look at the following resources:
+### GitHub
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp .env.example .env.local
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Then set:
 
-## Deploy on Vercel
+```bash
+NOVUA_CONTROL_ENABLE_GITHUB_LIVE=1
+GITHUB_TOKEN=your_github_token
+NOVUA_CONTROL_GITHUB_REPO=owner/repository
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+GitHub live ingestion currently adds:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- open pull requests
+- stale review detection
+- missing owner detection
+- requested reviewer signals
+- failing checks
+- merge-blocked state
+
+### Vercel
+
+To enable live deployment ingestion:
+
+```bash
+NOVUA_CONTROL_ENABLE_VERCEL_LIVE=1
+VERCEL_TOKEN=your_vercel_token
+NOVUA_CONTROL_VERCEL_PROJECT_ID=your_project_id
+NOVUA_CONTROL_VERCEL_TEAM_ID=optional_team_id
+```
+
+The home and alert trace views will show whether each source is running in `seed` or `live` mode.
+
+## Webhook Ingestion Preview
+
+Novua Control also includes ingestion preview endpoints so the normalization layer can be exercised independently from the UI.
+
+### GitHub webhook preview
+
+`POST /api/ingest/github`
+
+Optional:
+
+- `x-github-event: pull_request`
+- `x-github-event: pull_request_review`
+- `x-github-event: check_run`
+
+The route returns the normalized:
+
+- artifacts
+- events
+- signals
+
+This keeps the repo legible as an operational system, not just a dashboard.
+
+### Vercel webhook preview
+
+`POST /api/ingest/vercel`
+
+Optional:
+
+- `x-vercel-event: deployment`
+- `x-vercel-event: deployment.error`
+- `x-vercel-event: deployment.ready`
+
+This route previews how deployment payloads become control-layer artifacts and execution events.
+
+## Next Steps
+
+- expand GitHub live ingestion into release-aware dependency scoring
+- add Vercel deployment polling or webhook ingestion
+- integrate Linear or Jira ticket events
+- persist events, alerts, and audit entries in Postgres
+- add policy configuration and replayable incident simulations
