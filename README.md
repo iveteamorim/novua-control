@@ -147,6 +147,19 @@ NOVUA_CONTROL_VERCEL_TEAM_ID=optional_team_id
 
 The home and alert trace views will show whether each source is running in `seed` or `live` mode.
 
+## Demo PR Workflow
+
+For a stronger live demo, Novua Control should ingest at least one real GitHub pull request.
+
+The intended flow is:
+
+1. Open a small demo pull request in this repository
+2. Leave it unassigned so the engine can surface ownership gaps
+3. Let Novua Control ingest the PR through GitHub live mode
+4. Use the resulting signals to compare seed data vs real operational events
+
+This keeps the product grounded in real execution signals without making the first-load demo noisy or hard to follow.
+
 ## Webhook Ingestion Preview
 
 Novua Control also includes ingestion preview endpoints so the normalization layer can be exercised independently from the UI.
