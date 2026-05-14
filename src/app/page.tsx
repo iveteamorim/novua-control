@@ -224,6 +224,12 @@ export default async function Home() {
                   >
                     Open alert trace
                   </Link>
+                  <Link
+                    href="/ingestion-preview"
+                    className="ml-3 inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#6f645b] transition hover:border-black/15 hover:bg-[#f7f7f4] hover:text-[#17120f]"
+                  >
+                    See ingestion preview
+                  </Link>
                 </div>
 
                 <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-md">
@@ -364,6 +370,15 @@ export default async function Home() {
             title="Signals feeding the decision layer"
             description="The detailed operational view stays below the fold. The landing shows the decision, not every raw event first."
           />
+
+          <div className="mt-4 flex justify-start">
+            <Link
+              href="/ingestion-preview"
+              className="inline-flex rounded-full border border-black/8 px-3.5 py-2 text-xs font-medium uppercase tracking-[0.2em] text-[#6f645b] transition hover:border-black/15 hover:bg-black hover:text-white"
+            >
+              View ingestion preview
+            </Link>
+          </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {sourceOverview.map((source) => (

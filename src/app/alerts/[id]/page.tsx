@@ -196,6 +196,15 @@ export default async function AlertDetailPage({
             description="The product stays simple up front, but the ingestion layer still needs to be legible."
           />
 
+          <div className="mt-4 flex justify-start">
+            <Link
+              href="/ingestion-preview"
+              className="inline-flex rounded-full border border-black/8 px-3.5 py-2 text-xs font-medium uppercase tracking-[0.2em] text-[#6f645b] transition hover:border-black/15 hover:bg-black hover:text-white"
+            >
+              Open ingestion preview
+            </Link>
+          </div>
+
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {sourceOverview.map((source) => (
               <SourceCard
