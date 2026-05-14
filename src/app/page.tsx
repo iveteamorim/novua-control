@@ -5,7 +5,7 @@ import {
   getDashboardSnapshot,
   getSourceOverview,
 } from "@/lib/control/engine";
-import type { ControlArtifact, SourceOverview } from "@/lib/control/types";
+import type { ControlArtifact } from "@/lib/control/types";
 
 const severityStyles = {
   critical: "border-rose-300 bg-rose-50 text-rose-700",
@@ -20,9 +20,6 @@ export default async function Home() {
     getArtifactsBySource(),
   ]);
   const topAlert = snapshot.primaryAlert;
-  const sourceModes = Object.fromEntries(
-    sourceOverview.map((source) => [source.source, source.mode]),
-  ) as Record<"github" | "vercel" | "linear", "seed" | "live">;
 
   const findArtifact = (id: string) =>
     topAlert.artifacts.find((artifact) => artifact.id === id);
@@ -95,31 +92,18 @@ export default async function Home() {
   ];
 
   const criticalSignals = [
+    buildSignalSummary(githubEvidence, "Critical PR pending review for 19h"),
     buildSignalSummary(
-      sourceModes.github,
-      githubEvidence,
-      "Critical PR pending review for 19h",
-    ),
-    buildSignalSummary(
-      sourceModes.vercel,
       vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
         ? vercelEvidence
         : null,
       "Frontend deploy blocked for 4h",
     ),
-    buildSignalSummary(
-      sourceModes.linear,
-      linearEvidence,
-      "Customer-facing launch ticket unresolved",
-    ),
-    buildSignalSummary(
-      "seed",
-      blockedFlag,
-      "Feature flag rollout still queued",
-    ),
+    buildSignalSummary(linearEvidence, "Customer-facing launch ticket unresolved"),
+    buildSignalSummary(blockedFlag, "Feature flag rollout still queued"),
     githubEvidence?.owner
       ? `${githubEvidence.owner} currently owns the upstream review path`
-      : "No backend owner explicitly assigned",
+      : "No backend owner or release fallback explicitly assigned",
   ];
 
   return (
@@ -163,7 +147,7 @@ export default async function Home() {
             </p>
             <div className="mt-4 space-y-3">
               <SignalStep
-                source={`GitHub · ${sourceModes.github}`}
+                source="GitHub"
                 title={githubEvidence?.label ?? "PR waiting on review"}
                 detail={
                   githubEvidence?.summary ??
@@ -171,7 +155,7 @@ export default async function Home() {
                 }
               />
               <SignalStep
-                source={`Vercel · ${sourceModes.vercel}`}
+                source="Vercel"
                 title={vercelEvidence?.label ?? "Deploy blocked"}
                 detail={
                   vercelEvidence?.summary ??
@@ -179,7 +163,7 @@ export default async function Home() {
                 }
               />
               <SignalStep
-                source={`Linear · ${sourceModes.linear}`}
+                source="Linear"
                 title={linearEvidence?.label ?? "Ticket unresolved"}
                 detail={
                   linearEvidence?.summary ??
@@ -189,7 +173,7 @@ export default async function Home() {
               <SignalStep
                 source="Control"
                 title="Escalation triggered"
-                detail="assign owner or rollback checkout-v2"
+                detail="assign owner, name fallback, or rollback checkout-v2"
                 terminal
               />
             </div>
@@ -236,7 +220,10 @@ export default async function Home() {
                   <CaseFact label="Affected systems" value={affectedSystems} />
                   <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
                   <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
-                  <CaseFact label="Recommended action" value="Assign backend owner or rollback flag" />
+                  <CaseFact
+                    label="Recommended action"
+                    value="Assign owner + fallback or rollback flag"
+                  />
                 </div>
               </div>
 
@@ -366,9 +353,9 @@ export default async function Home() {
 
         <section className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
-            eyebrow="Operational detail"
-            title="Signals feeding the decision layer"
-            description="The detailed operational view stays below the fold. The landing shows the decision, not every raw event first."
+            eyebrow="Execution evidence"
+            title="The incident stays simple. The evidence does not."
+            description="The landing leads with one operational decision. The evidence underneath shows which systems support that call."
           />
 
           <div className="mt-4 flex justify-start">
@@ -393,7 +380,6 @@ export default async function Home() {
                   vercelEvidence,
                   linearEvidence,
                 )}
-                mode={source.mode}
               />
             ))}
           </div>
@@ -451,7 +437,6 @@ function pickPrimarySourceArtifact(
 }
 
 function buildSignalSummary(
-  mode: SourceOverview["mode"],
   artifact: ControlArtifact | null | undefined,
   fallback: string,
 ) {
@@ -459,8 +444,7 @@ function buildSignalSummary(
     return fallback;
   }
 
-  const prefix = mode === "live" ? "Live signal:" : "Seed signal:";
-  return `${prefix} ${artifact.summary}`;
+  return artifact.summary;
 }
 
 function getSourceEvidenceHeadline(
@@ -621,28 +605,15 @@ function CompactSourceCard({
   subtitle,
   value,
   headline,
-  mode,
 }: {
   title: string;
   subtitle: string;
   value: string;
   headline: string;
-  mode: "seed" | "live";
 }) {
   return (
     <div className="rounded-[1.25rem] border border-black/6 bg-[#f7f7f4] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{subtitle}</p>
-        <span
-          className={`rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] ${
-            mode === "live"
-              ? "bg-[#17120f] text-white"
-              : "bg-white text-[#6d6259]"
-          }`}
-        >
-          {mode}
-        </span>
-      </div>
+      <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{subtitle}</p>
       <h3 className="mt-2 text-lg font-semibold text-[#17120f]">{title}</h3>
       <p className="mt-2 text-sm font-medium text-[#2d241d]">{headline}</p>
       <p className="mt-3 text-sm text-[#615850]">{value}</p>

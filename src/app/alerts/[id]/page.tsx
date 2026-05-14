@@ -191,9 +191,9 @@ export default async function AlertDetailPage({
 
         <section className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
-            eyebrow="Source ingestion"
-            title="What the engine is watching"
-            description="The product stays simple up front, but the ingestion layer still needs to be legible."
+            eyebrow="Connected systems"
+            title="What the decision is grounded on"
+            description="The alert stays compressed, but the underlying systems still need to remain legible."
           />
 
           <div className="mt-4 flex justify-start">
@@ -210,7 +210,6 @@ export default async function AlertDetailPage({
               <SourceCard
                 key={source.source}
                 title={getSourceTitle(source.source)}
-                mode={source.mode}
                 stats={`${source.signals} signals · ${source.events} events · ${source.artifacts} artifacts`}
               />
             ))}
@@ -324,25 +323,14 @@ function TimelineItem({
 
 function SourceCard({
   title,
-  mode,
   stats,
 }: {
   title: string;
-  mode: "seed" | "live";
   stats: string;
 }) {
   return (
     <div className="rounded-[1.25rem] border border-black/6 bg-[#f7f7f4] p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold text-[#17120f]">{title}</h3>
-        <span
-          className={`rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] ${
-            mode === "live" ? "bg-[#17120f] text-white" : "bg-white text-[#6d6259]"
-          }`}
-        >
-          {mode}
-        </span>
-      </div>
+      <h3 className="text-lg font-semibold text-[#17120f]">{title}</h3>
       <p className="mt-3 text-sm text-[#615850]">{stats}</p>
     </div>
   );

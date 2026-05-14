@@ -145,7 +145,7 @@ NOVUA_CONTROL_VERCEL_PROJECT_ID=your_project_id
 NOVUA_CONTROL_VERCEL_TEAM_ID=optional_team_id
 ```
 
-The home and alert trace views will show whether each source is running in `seed` or `live` mode.
+The public demo keeps the story focused on one incident. If you want to inspect how webhook payloads are normalized, use the ingestion preview instead of the primary landing.
 
 ## Webhook Ingestion Preview
 
