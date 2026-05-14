@@ -188,3 +188,14 @@ This route previews how deployment payloads become control-layer artifacts and e
 - integrate Linear or Jira ticket events
 - persist events, alerts, and audit entries in Postgres
 - add policy configuration and replayable incident simulations
+
+## License
+
+This repository is source-available and proprietary.
+
+Copyright (c) 2026 Ivete de Amorim. All rights reserved.
+
+No permission is granted to use, copy, modify, redistribute, sell, or offer
+this software as a commercial service without prior written permission from the
+author. Commercial licensing is available on request via
+`iveteamorim@gmail.com`.
