@@ -124,17 +124,17 @@ export default async function Home() {
 
             <div className="grid gap-3 sm:grid-cols-3">
               <MetricCard
-                label="Active alerts"
-                value={String(snapshot.alerts.length)}
+                label="Incident in focus"
+                value="1"
                 accent="text-amber-700"
               />
               <MetricCard
-                label="Blocked artifacts"
+                label="Blocked dependencies"
                 value={String(snapshot.blockedArtifacts.length)}
                 accent="text-rose-700"
               />
               <MetricCard
-                label="Mean decision delay"
+                label="Escalation window"
                 value={`${snapshot.meanDecisionDelayHours}h`}
                 accent="text-stone-700"
               />
@@ -183,7 +183,7 @@ export default async function Home() {
         <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Critical case"
+              eyebrow="Incident in focus"
               title="Checkout release blocked by unresolved API dependency."
               description="One upstream review delay is now holding the deploy, the downstream launch, and the flag rollout."
             />
