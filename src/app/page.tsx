@@ -50,6 +50,12 @@ export default async function Home() {
   )
     .filter(Boolean)
     .join(", ");
+  const releaseWindow = getStringMetadata(releaseTrain, "releaseWindow") ?? "today";
+  const impactedUsers = getNumberMetadata(blockedDeploy, "impactedUsers");
+  const openHours = getNumberMetadata(blockedPr, "openHours");
+  const rolloutPercentage = getNumberMetadata(blockedFlag, "rolloutPercentage");
+  const downstreamBlockers = [blockedDeploy, blockedTicket, blockedFlag].filter(Boolean)
+    .length;
 
   const timeline = [
     {
@@ -112,30 +118,51 @@ export default async function Home() {
         <header className="grid gap-6 rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_24px_80px_rgba(17,24,39,0.05)] lg:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-4">
             <p className="text-xs font-medium uppercase tracking-[0.38em] text-amber-700/82">
-              Novua Control
+              One blocked release
             </p>
             <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#17120f] sm:text-5xl">
-              Operational execution intelligence for product and engineering teams.
+              Checkout cannot ship.
             </h1>
             <p className="max-w-3xl text-base leading-8 text-[#5f564e] sm:text-lg">
-              Detects blocked releases, ownership gaps, and deployment risk across
+              An unresolved API review is blocking the production deploy, the
+              customer-facing launch ticket, and the checkout-v2 rollout across
               GitHub, Vercel, and Linear.
             </p>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/alerts/${topAlert.id}`}
+                className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
+              >
+                View incident trace
+              </Link>
+              <Link
+                href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20walkthrough"
+                className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+              >
+                Request product walkthrough
+              </Link>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MetricCard
-                label="Incident in focus"
-                value="1"
+                label="Release window"
+                value={releaseWindow}
                 accent="text-amber-700"
               />
               <MetricCard
-                label="Blocked dependencies"
-                value={String(snapshot.blockedArtifacts.length)}
+                label="Users affected"
+                value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
                 accent="text-rose-700"
               />
               <MetricCard
-                label="Escalation window"
-                value={`${snapshot.meanDecisionDelayHours}h`}
+                label="Upstream delay"
+                value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
+                accent="text-stone-700"
+              />
+              <MetricCard
+                label="Rollout stuck at"
+                value={`${rolloutPercentage ?? 0}%`}
                 accent="text-stone-700"
               />
             </div>
@@ -143,7 +170,7 @@ export default async function Home() {
 
           <div className="rounded-[1.75rem] border border-black/6 bg-[#f7f7f4] p-5">
             <p className="text-xs uppercase tracking-[0.3em] text-[#8d8176]">
-              Connected evidence
+              What changed across systems
             </p>
             <div className="mt-4 space-y-3">
               <SignalStep
@@ -153,6 +180,7 @@ export default async function Home() {
                   githubEvidence?.summary ??
                   "checkout-api-contract has no backend owner"
                 }
+                meta={githubEvidence?.updatedAt ?? "19h ago"}
               />
               <SignalStep
                 source="Vercel"
@@ -161,6 +189,7 @@ export default async function Home() {
                   vercelEvidence?.summary ??
                   "web-checkout-production cannot ship"
                 }
+                meta={vercelEvidence?.updatedAt ?? "4h ago"}
               />
               <SignalStep
                 source="Linear"
@@ -169,11 +198,13 @@ export default async function Home() {
                   linearEvidence?.summary ??
                   "launch work stays blocked downstream"
                 }
+                meta={linearEvidence?.updatedAt ?? "2h ago"}
               />
               <SignalStep
                 source="Control"
                 title="Escalation triggered"
                 detail="assign owner, name fallback, or rollback checkout-v2"
+                meta="12m ago"
                 terminal
               />
             </div>
@@ -183,9 +214,9 @@ export default async function Home() {
         <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Incident in focus"
-              title="Checkout release blocked by unresolved API dependency."
-              description="One upstream review delay is now holding the deploy, the downstream launch, and the flag rollout."
+              eyebrow="Decision in focus"
+              title="What should happen in the next hour"
+              description={topAlert.recommendedAction}
             />
 
             <div className="mt-6 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-5">
@@ -202,18 +233,6 @@ export default async function Home() {
                       risk score
                     </span>
                   </h2>
-                  <Link
-                    href={`/alerts/${topAlert.id}`}
-                    className="inline-flex rounded-full border border-black/8 bg-white px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-black hover:text-white"
-                  >
-                    Open alert trace
-                  </Link>
-                  <Link
-                    href="/ingestion-preview"
-                    className="ml-3 inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#6f645b] transition hover:border-black/15 hover:bg-[#f7f7f4] hover:text-[#17120f]"
-                  >
-                    See ingestion preview
-                  </Link>
                 </div>
 
                 <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-md">
@@ -221,8 +240,8 @@ export default async function Home() {
                   <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
                   <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
                   <CaseFact
-                    label="Recommended action"
-                    value="Assign owner + fallback or rollback flag"
+                    label="Downstream blockers"
+                    value={`${downstreamBlockers}`}
                   />
                 </div>
               </div>
@@ -230,10 +249,12 @@ export default async function Home() {
               <div className="mt-6 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
                 <div className="rounded-[1.3rem] border border-black/6 bg-white p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[#8d8176]">
-                    Why it matters
+                    If nobody acts
                   </p>
                   <p className="mt-3 text-sm leading-7 text-[#615850]">
-                    {topAlert.recommendedAction}
+                    The release train stays blocked, the launch ticket remains
+                    unresolved, and checkout-v2 stays at {rolloutPercentage ?? 0}% rollout
+                    while the upstream review has no explicit backend owner.
                   </p>
                 </div>
 
@@ -257,7 +278,7 @@ export default async function Home() {
           <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Ownership chain"
-              title="Nobody is missing in theory. Someone is missing in practice."
+              title="Who must move now"
               description="Control surfaces where coordination breaks before the team notices it too late."
             />
 
@@ -353,9 +374,9 @@ export default async function Home() {
 
         <section className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
-            eyebrow="Execution evidence"
+            eyebrow="How the system knows"
             title="The incident stays simple. The evidence does not."
-            description="The landing leads with one operational decision. The evidence underneath shows which systems support that call."
+            description="One operational decision sits on top of review state, deploy state, ownership gaps, and downstream delivery signals."
           />
 
           <div className="mt-4 flex justify-start">
@@ -491,11 +512,13 @@ function SignalStep({
   source,
   title,
   detail,
+  meta,
   terminal = false,
 }: {
   source: string;
   title: string;
   detail: string;
+  meta?: string;
   terminal?: boolean;
 }) {
   return (
@@ -503,7 +526,14 @@ function SignalStep({
       {!terminal ? (
         <span className="absolute left-6 top-full h-4 w-px bg-black/10" />
       ) : null}
-      <p className="text-xs uppercase tracking-[0.22em] text-[#8f8378]">{source}</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs uppercase tracking-[0.22em] text-[#8f8378]">{source}</p>
+        {meta ? (
+          <span className="rounded-full bg-[#f7f7f4] px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8f8378]">
+            {meta}
+          </span>
+        ) : null}
+      </div>
       <h3 className="mt-2 text-base font-semibold text-[#17120f]">{title}</h3>
       <p className="mt-1 text-sm text-[#615850]">{detail}</p>
     </div>
@@ -517,6 +547,31 @@ function CaseFact({ label, value }: { label: string; value: string }) {
       <p className="mt-2 text-sm font-medium text-[#2c241f]">{value}</p>
     </div>
   );
+}
+
+function getStringMetadata(
+  artifact: ControlArtifact | null | undefined,
+  key: string,
+) {
+  const value = artifact?.metadata?.[key];
+
+  return typeof value === "string" ? value : null;
+}
+
+function getNumberMetadata(
+  artifact: ControlArtifact | null | undefined,
+  key: string,
+) {
+  const value = artifact?.metadata?.[key];
+
+  return typeof value === "number" ? value : null;
+}
+
+function formatCompactNumber(value: number) {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
 }
 
 function OwnerRow({

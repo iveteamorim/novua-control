@@ -284,11 +284,11 @@ export const controlDataset: ControlDataset = {
   alertSeeds: [
     {
       id: "alert-checkout-release",
-      title: "Release risk increasing",
+      title: "Checkout release blocked",
       summary:
-        "Frontend deployment is blocked by an unresolved API dependency and customer-facing launch ticket.",
+        "API review has no clear owner, the production deploy is blocked, and customer-facing launch work cannot ship.",
       recommendedAction:
-        "Assign a backend owner and explicit release fallback within the next hour or rollback the checkout flag from the release train.",
+        "Assign a backend owner and explicit release fallback within the next hour, or remove checkout-v2 from today’s release train.",
       owner: "Release Captain",
       artifactIds: [
         "service-checkout",
