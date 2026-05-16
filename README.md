@@ -181,12 +181,33 @@ Optional:
 
 This route previews how deployment payloads become control-layer artifacts and execution events.
 
+## Durable Incident State
+
+Novua Control can persist incident state, manual actions, and audit trail entries in Supabase Storage.
+
+Set these environment variables to move beyond the local JSON fallback:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NOVUA_CONTROL_SUPABASE_BUCKET=novua-control
+NOVUA_CONTROL_SUPABASE_OBJECT=control-store.json
+```
+
+With this configured:
+
+- `Assign backend owner`
+- `Start mitigation`
+- `Resolve incident`
+
+persist across reloads and deployments instead of living only in a local file.
+
 ## Next Steps
 
 - expand GitHub live ingestion into release-aware dependency scoring
 - add Vercel deployment polling or webhook ingestion
 - integrate Linear or Jira ticket events
-- persist events, alerts, and audit entries in Postgres
+- move incident persistence from object storage to Postgres when multi-workspace data modeling is needed
 - add policy configuration and replayable incident simulations
 
 ## License

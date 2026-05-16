@@ -1,4 +1,3 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { IngestionPreview } from "./ingestion";
@@ -7,6 +6,10 @@ import {
   getArtifactKeywords,
   replaceArtifactsForAlert,
 } from "./matching";
+import {
+  readControlStoreText,
+  writeControlStoreText,
+} from "./persistence";
 import type {
   AlertSeed,
   AuditEntry,
@@ -44,10 +47,6 @@ type StateEvaluation = {
   reason: string;
 };
 
-function isWritableStorePath() {
-  return Boolean(STORE_FILE);
-}
-
 function isValidState(value: unknown): value is IncidentState {
   return [
     "detected",
@@ -74,21 +73,14 @@ function toStore(input: unknown): ControlStore {
   };
 }
 
-async function ensureStoreDirectory() {
-  if (!isWritableStorePath()) {
-    return;
-  }
-
-  await mkdir(path.dirname(STORE_FILE), { recursive: true });
-}
-
 export async function readControlStore(): Promise<ControlStore> {
-  if (!isWritableStorePath()) {
-    return EMPTY_STORE;
-  }
-
   try {
-    const content = await readFile(STORE_FILE, "utf8");
+    const content = await readControlStoreText(STORE_FILE);
+
+    if (!content) {
+      return EMPTY_STORE;
+    }
+
     return toStore(JSON.parse(content));
   } catch {
     return EMPTY_STORE;
@@ -96,12 +88,7 @@ export async function readControlStore(): Promise<ControlStore> {
 }
 
 async function writeControlStore(store: ControlStore) {
-  if (!isWritableStorePath()) {
-    return;
-  }
-
-  await ensureStoreDirectory();
-  await writeFile(STORE_FILE, JSON.stringify(store, null, 2), "utf8");
+  await writeControlStoreText(STORE_FILE, JSON.stringify(store, null, 2));
 }
 
 function findAffectedAlertIds(preview: IngestionPreview, dataset: ControlDataset) {
