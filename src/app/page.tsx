@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import {
+  assignBackendOwnerAction,
+  resolveIncidentAction,
+  startMitigationAction,
+} from "@/app/control-actions";
 import { getDashboardSnapshot, getSourceOverview } from "@/lib/control/engine";
 import type { ControlArtifact } from "@/lib/control/types";
 
@@ -159,6 +164,24 @@ export default async function Home() {
                 Assign the backend owner now. If nobody can take it, remove
                 checkout-v2 from today&apos;s release.
               </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <form action={assignBackendOwnerAction.bind(null, topAlert.id)}>
+                <button className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
+                  Assign backend owner
+                </button>
+              </form>
+              <form action={startMitigationAction.bind(null, topAlert.id)}>
+                <button className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
+                  Start mitigation
+                </button>
+              </form>
+              <form action={resolveIncidentAction.bind(null, topAlert.id)}>
+                <button className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
+                  Resolve incident
+                </button>
+              </form>
             </div>
 
             <div className="mt-4 space-y-3">

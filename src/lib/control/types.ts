@@ -171,6 +171,7 @@ export type ControlStore = {
   ingestions: PersistedIngestionRecord[];
   incidents: PersistedIncidentRecord[];
   auditTrail: AuditEntry[];
+  manualArtifacts: ControlArtifact[];
 };
 
 export type DashboardSnapshot = {

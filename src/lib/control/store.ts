@@ -27,6 +27,7 @@ const EMPTY_STORE: ControlStore = {
   ingestions: [],
   incidents: [],
   auditTrail: [],
+  manualArtifacts: [],
 };
 
 export type PersistedDatasetOverlay = {
@@ -69,6 +70,7 @@ function toStore(input: unknown): ControlStore {
     ingestions: Array.isArray(record.ingestions) ? record.ingestions : [],
     incidents: Array.isArray(record.incidents) ? record.incidents : [],
     auditTrail: Array.isArray(record.auditTrail) ? record.auditTrail : [],
+    manualArtifacts: Array.isArray(record.manualArtifacts) ? record.manualArtifacts : [],
   };
 }
 
@@ -401,7 +403,10 @@ export async function persistIngestionPreview(
 export async function getPersistedDatasetOverlay(): Promise<PersistedDatasetOverlay> {
   const store = await readControlStore();
   const artifacts = dedupeById(
-    store.ingestions.flatMap((ingestion) => ingestion.artifacts),
+    [
+      ...store.ingestions.flatMap((ingestion) => ingestion.artifacts),
+      ...store.manualArtifacts,
+    ],
   );
   const events = dedupeById(
     store.ingestions.flatMap((ingestion) => ingestion.events),
@@ -423,5 +428,223 @@ export async function getPersistedDatasetOverlay(): Promise<PersistedDatasetOver
     incidentTransitions: dedupeById(
       store.incidents.flatMap((incident) => incident.transitions),
     ),
+  };
+}
+
+type ManualIncidentActionInput = {
+  alertId: string;
+  action: "assign_backend_owner" | "start_mitigation" | "resolve_incident";
+  actor: string;
+  owner?: string;
+};
+
+function upsertManualArtifact(store: ControlStore, artifact: ControlArtifact) {
+  const index = store.manualArtifacts.findIndex((item) => item.id === artifact.id);
+
+  if (index >= 0) {
+    store.manualArtifacts[index] = artifact;
+    return;
+  }
+
+  store.manualArtifacts.push(artifact);
+}
+
+function buildActionAuditEntry({
+  alertId,
+  actor,
+  action,
+  details,
+  at,
+  beforeState,
+  afterState,
+}: {
+  alertId: string;
+  actor: string;
+  action: string;
+  details: string;
+  at: string;
+  beforeState?: IncidentState;
+  afterState?: IncidentState;
+}) {
+  return {
+    id: `audit-manual-${alertId}-${action.replace(/\s+/g, "-").toLowerCase()}-${at}`,
+    alertId,
+    at,
+    actor,
+    action,
+    details,
+    beforeState,
+    afterState,
+  } satisfies AuditEntry;
+}
+
+export async function applyManualIncidentAction(
+  dataset: ControlDataset,
+  input: ManualIncidentActionInput,
+) {
+  const store = await readControlStore();
+  const seed = dataset.alertSeeds.find((item) => item.id === input.alertId);
+
+  if (!seed) {
+    throw new Error(`Unknown alert: ${input.alertId}`);
+  }
+
+  const now = new Date().toISOString();
+  const touched: ControlArtifact[] = [];
+  const currentRecord =
+    store.incidents.find((incident) => incident.alertId === input.alertId) ?? null;
+  const previousState = currentRecord?.state ?? seed.state;
+
+  const currentArtifacts = getRelevantArtifactsForAlert(
+    seed,
+    dataset,
+    dedupeById([...dataset.artifacts, ...store.manualArtifacts]),
+  );
+
+  const getByType = (type: ControlArtifact["type"]) =>
+    currentArtifacts.find((artifact) => artifact.type === type) ?? null;
+
+  if (input.action === "assign_backend_owner") {
+    const pr = getByType("pull_request");
+
+    if (pr) {
+      touched.push({
+        ...pr,
+        owner: input.owner ?? "Backend owner",
+        updatedAt: now,
+        summary: "Checkout API review now has an explicit backend owner and is waiting for clearance.",
+      });
+    }
+  }
+
+  if (input.action === "start_mitigation") {
+    const deploy = getByType("deployment");
+
+    if (deploy) {
+      touched.push({
+        ...deploy,
+        status: "in_progress",
+        updatedAt: now,
+        summary: "Frontend owner started mitigation on the blocked production deployment.",
+      });
+    }
+  }
+
+  if (input.action === "resolve_incident") {
+    const resolutionSummaries: Partial<Record<ControlArtifact["type"], string>> = {
+      pull_request: "Checkout API review cleared and no longer blocks the release path.",
+      deployment: "Production deployment recovered and is no longer blocking checkout shipping.",
+      ticket: "Customer-facing release is no longer blocked by the deploy path.",
+      feature_flag: "checkout-v2 rollout gate cleared after release coordination completed.",
+      service: "Checkout release train recovered and can ship again.",
+    };
+
+    for (const artifact of currentArtifacts) {
+      if (["blocked", "waiting_review", "failed", "queued", "in_progress"].includes(artifact.status)) {
+        touched.push({
+          ...artifact,
+          status: "healthy",
+          updatedAt: now,
+          summary: resolutionSummaries[artifact.type] ?? artifact.summary,
+          metadata:
+            artifact.type === "feature_flag"
+              ? { ...artifact.metadata, rolloutPercentage: 100 }
+              : artifact.metadata,
+        });
+      }
+    }
+  }
+
+  for (const artifact of touched) {
+    upsertManualArtifact(store, artifact);
+  }
+
+  const mergedArtifacts = dedupeById([...dataset.artifacts, ...store.manualArtifacts]);
+  const relevantArtifacts = getRelevantArtifactsForAlert(seed, dataset, mergedArtifacts);
+  const evaluation = deriveIncidentState(seed, relevantArtifacts, previousState);
+
+  const actionMap = {
+    assign_backend_owner: {
+      action: "Assigned backend owner",
+      details: `Set explicit backend ownership on the checkout API review.`,
+    },
+    start_mitigation: {
+      action: "Mitigation started",
+      details: `Marked the production deploy as actively mitigating while the team works the blocker.`,
+    },
+    resolve_incident: {
+      action: "Incident resolved",
+      details: `Marked the blocked release path as cleared and closed the incident.`,
+    },
+  } satisfies Record<ManualIncidentActionInput["action"], { action: string; details: string }>;
+
+  store.auditTrail.push(
+    buildActionAuditEntry({
+      alertId: input.alertId,
+      actor: input.actor,
+      action: actionMap[input.action].action,
+      details: actionMap[input.action].details,
+      at: now,
+      beforeState: previousState,
+      afterState: evaluation.state,
+    }),
+  );
+
+  if (!currentRecord) {
+    const transitions =
+      evaluation.state !== previousState
+        ? [
+            buildTransition(
+              input.alertId,
+              input.actor,
+              now,
+              previousState,
+              evaluation.state,
+              evaluation.reason,
+            ),
+          ]
+        : [];
+
+    store.incidents.push({
+      alertId: input.alertId,
+      state: evaluation.state,
+      owner: seed.owner,
+      updatedAt: now,
+      transitions,
+    });
+
+    if (transitions[0]) {
+      store.auditTrail.push(buildTransitionAuditEntry(transitions[0]));
+    }
+  } else if (currentRecord.state !== evaluation.state) {
+    const transition = buildTransition(
+      input.alertId,
+      input.actor,
+      now,
+      currentRecord.state,
+      evaluation.state,
+      evaluation.reason,
+    );
+
+    currentRecord.state = evaluation.state;
+    currentRecord.updatedAt = now;
+    currentRecord.transitions.push(transition);
+    store.auditTrail.push(buildTransitionAuditEntry(transition));
+  } else {
+    currentRecord.updatedAt = now;
+  }
+
+  store.manualArtifacts = dedupeById(store.manualArtifacts);
+  store.auditTrail = dedupeById(store.auditTrail);
+
+  for (const incident of store.incidents) {
+    incident.transitions = dedupeById(incident.transitions);
+  }
+
+  await writeControlStore(store);
+
+  return {
+    state: evaluation.state,
+    touchedArtifacts: touched.map((artifact) => artifact.id),
   };
 }
