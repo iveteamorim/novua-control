@@ -4,6 +4,7 @@ import { getVercelBundle } from "./connectors/vercel";
 import { controlDataset } from "./fixtures";
 import { buildSignalsForArtifacts } from "./normalize";
 import type { ControlDataset, SourceBundle, SourceSystem } from "./types";
+import { getPersistedDatasetOverlay } from "./store";
 
 function mergeLiveBundles(
   dataset: ControlDataset,
@@ -45,6 +46,47 @@ function mergeLiveBundles(
   };
 }
 
+function dedupeById<T extends { id: string }>(items: T[]) {
+  const map = new Map<string, T>();
+
+  for (const item of items) {
+    map.set(item.id, item);
+  }
+
+  return Array.from(map.values());
+}
+
+async function mergePersistedOverlay(dataset: ControlDataset): Promise<ControlDataset> {
+  const overlay = await getPersistedDatasetOverlay();
+
+  if (
+    overlay.artifacts.length === 0 &&
+    overlay.events.length === 0 &&
+    overlay.signals.length === 0 &&
+    overlay.auditTrail.length === 0 &&
+    overlay.incidentTransitions.length === 0
+  ) {
+    return dataset;
+  }
+
+  return {
+    ...dataset,
+    artifacts: dedupeById([...dataset.artifacts, ...overlay.artifacts]),
+    events: dedupeById([...dataset.events, ...overlay.events]),
+    signals: dedupeById([...dataset.signals, ...overlay.signals]),
+    auditTrail: dedupeById([...dataset.auditTrail, ...overlay.auditTrail]),
+    alertSeeds: dataset.alertSeeds.map((seed) =>
+      overlay.alertStates[seed.id]
+        ? { ...seed, state: overlay.alertStates[seed.id]! }
+        : seed,
+    ),
+    incidentTransitions: dedupeById([
+      ...(dataset.incidentTransitions ?? []),
+      ...overlay.incidentTransitions,
+    ]),
+  };
+}
+
 export async function getControlDataset(): Promise<ControlDataset> {
   const bundles = await Promise.all([
     getGitHubBundle(),
@@ -52,5 +94,6 @@ export async function getControlDataset(): Promise<ControlDataset> {
     getLinearBundle(),
   ]);
 
-  return mergeLiveBundles(controlDataset, bundles);
+  const datasetWithLive = mergeLiveBundles(controlDataset, bundles);
+  return mergePersistedOverlay(datasetWithLive);
 }

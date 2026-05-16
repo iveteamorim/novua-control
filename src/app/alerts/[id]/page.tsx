@@ -6,6 +6,7 @@ import {
   getAuditTrail,
   getSourceOverview,
 } from "@/lib/control/engine";
+import { formatRelativeTime } from "@/lib/control/normalize";
 
 const severityStyles = {
   critical: "border-rose-300 bg-rose-50 text-rose-700",
@@ -180,9 +181,9 @@ export default async function AlertDetailPage({
               {auditTrail.map((entry) => (
                 <TimelineItem
                   key={entry.id}
-                  at={entry.at}
+                  at={formatTimeLabel(entry.at)}
                   title={entry.action}
-                  body={`${entry.actor} · ${entry.details}`}
+                  body={formatAuditBody(entry)}
                 />
               ))}
             </div>
@@ -319,6 +320,30 @@ function TimelineItem({
       </div>
     </div>
   );
+}
+
+function formatTimeLabel(value: string) {
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return formatRelativeTime(parsed);
+}
+
+function formatAuditBody(entry: {
+  actor: string;
+  details: string;
+  beforeState?: string;
+  afterState?: string;
+}) {
+  const stateChange =
+    entry.beforeState && entry.afterState
+      ? ` (${entry.beforeState} → ${entry.afterState})`
+      : "";
+
+  return `${entry.actor} · ${entry.details}${stateChange}`;
 }
 
 function SourceCard({

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { controlDataset } from "@/lib/control/fixtures";
 import { normalizeVercelWebhook } from "@/lib/control/ingestion";
+import { persistIngestionPreview } from "@/lib/control/store";
 
 export async function GET() {
   return NextResponse.json({
@@ -19,6 +21,10 @@ export async function POST(request: Request) {
 
   const payload = (await request.json()) as unknown;
   const preview = normalizeVercelWebhook(payload, eventType);
+  const persistence = await persistIngestionPreview(preview, controlDataset);
 
-  return NextResponse.json(preview);
+  return NextResponse.json({
+    ...preview,
+    persistence,
+  });
 }

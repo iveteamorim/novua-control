@@ -1,4 +1,5 @@
 import { getControlDataset } from "./repository";
+import { replaceArtifactsForAlert } from "./matching";
 import type {
   ConnectorMode,
   ControlArtifact,
@@ -35,9 +36,12 @@ async function hydrateAlert(
     throw new Error(`Unknown alert seed: ${alertId}`);
   }
 
-  const artifacts = seed.artifactIds
-    .map((artifactId) => dataset.artifacts.find((artifact) => artifact.id === artifactId))
-    .filter((artifact): artifact is ControlArtifact => Boolean(artifact));
+  const candidateArtifacts = dataset.artifacts.filter(
+    (artifact) => !seed.artifactIds.includes(artifact.id),
+  );
+  const artifacts = replaceArtifactsForAlert(seed, dataset, candidateArtifacts).filter(
+    (artifact): artifact is ControlArtifact => Boolean(artifact),
+  );
 
   const rules = seed.triggeredRuleIds
     .map((ruleId) => dataset.policyRules.find((rule) => rule.id === ruleId))

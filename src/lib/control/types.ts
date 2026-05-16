@@ -1,5 +1,13 @@
 export type SourceSystem = "github" | "vercel" | "linear";
 
+export type IncidentState =
+  | "detected"
+  | "triaged"
+  | "assigned"
+  | "mitigating"
+  | "resolved"
+  | "reopened";
+
 export type ArtifactType =
   | "pull_request"
   | "deployment"
@@ -88,7 +96,7 @@ export type AlertSeed = {
   recommendedAction: string;
   owner: string | null;
   artifactIds: string[];
-  state: "open" | "acknowledged" | "escalated";
+  state: IncidentState;
   triggeredRuleIds: string[];
 };
 
@@ -106,6 +114,19 @@ export type AuditEntry = {
   actor: string;
   action: string;
   details: string;
+  beforeState?: IncidentState;
+  afterState?: IncidentState;
+  reason?: string;
+};
+
+export type IncidentTransition = {
+  id: string;
+  alertId: string;
+  at: string;
+  actor: string;
+  fromState: IncidentState;
+  toState: IncidentState;
+  reason: string;
 };
 
 export type SourceOverview = {
@@ -124,7 +145,32 @@ export type ControlDataset = {
   policyRules: PolicyRule[];
   alertSeeds: AlertSeed[];
   auditTrail: AuditEntry[];
+  incidentTransitions?: IncidentTransition[];
   sourceModes?: Partial<Record<SourceSystem, ConnectorMode>>;
+};
+
+export type PersistedIngestionRecord = {
+  id: string;
+  source: SourceSystem;
+  eventType: string;
+  receivedAt: string;
+  artifacts: ControlArtifact[];
+  events: ControlEvent[];
+  signals: ControlSignal[];
+};
+
+export type PersistedIncidentRecord = {
+  alertId: string;
+  state: IncidentState;
+  owner: string | null;
+  updatedAt: string;
+  transitions: IncidentTransition[];
+};
+
+export type ControlStore = {
+  ingestions: PersistedIngestionRecord[];
+  incidents: PersistedIncidentRecord[];
+  auditTrail: AuditEntry[];
 };
 
 export type DashboardSnapshot = {

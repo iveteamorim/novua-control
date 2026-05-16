@@ -103,6 +103,28 @@ function mapVercelStatus(state?: string): ArtifactStatus {
   return "in_progress";
 }
 
+function inferGitHubService(options: {
+  repositoryName: string;
+  title: string;
+  branch: string;
+}) {
+  const context = `${options.repositoryName} ${options.title} ${options.branch}`.toLowerCase();
+
+  if (context.includes("checkout") && context.includes("api")) {
+    return "checkout-api";
+  }
+
+  if (context.includes("checkout")) {
+    return "checkout";
+  }
+
+  if (context.includes("worker") && context.includes("payment")) {
+    return "payments-worker";
+  }
+
+  return options.repositoryName.split("/").at(-1) ?? options.repositoryName;
+}
+
 function buildEmptyPreview(
   source: SourceSystem,
   eventType: string,
@@ -169,7 +191,11 @@ export function normalizeGitHubWebhook(
   const updatedAt = readTimestamp(pullRequest.updated_at);
   const repositoryName =
     readString(repository?.full_name) ?? readString(repository?.name) ?? "github-repo";
-  const service = repositoryName.split("/").at(-1) ?? repositoryName;
+  const service = inferGitHubService({
+    repositoryName,
+    title,
+    branch: readString(head?.ref) ?? "",
+  });
 
   const status = mapGitHubStatus({
     draft,

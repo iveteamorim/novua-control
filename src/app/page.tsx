@@ -6,6 +6,7 @@ import {
   getDashboardSnapshot,
   getSourceOverview,
 } from "@/lib/control/engine";
+import { formatRelativeTime } from "@/lib/control/normalize";
 import type { ControlArtifact } from "@/lib/control/types";
 
 const severityStyles = {
@@ -48,11 +49,6 @@ export default async function Home() {
     blockedTicket,
   );
 
-  const affectedSystems = Array.from(
-    new Set(topAlert.artifacts.map((artifact) => artifact.service)),
-  )
-    .filter(Boolean)
-    .join(", ");
   const releaseWindow = getStringMetadata(releaseTrain, "releaseWindow") ?? "today";
   const impactedUsers = getNumberMetadata(blockedDeploy, "impactedUsers");
   const openHours = getNumberMetadata(blockedPr, "openHours");
@@ -200,9 +196,9 @@ export default async function Home() {
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <CaseFact label="Risk score" value={`${topAlert.riskScore}`} />
+              <CaseFact label="Incident state" value={topAlert.state} />
               <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
               <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
-              <CaseFact label="Affected systems" value={affectedSystems} />
             </div>
 
             <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
@@ -346,7 +342,7 @@ export default async function Home() {
               {timeline.map((item) => (
                 <TimelineItem
                   key={`${item.at}-${item.title}`}
-                  at={item.at}
+                  at={formatTimeLabel(item.at)}
                   title={item.title}
                   body={item.body}
                 />
@@ -365,9 +361,9 @@ export default async function Home() {
               {auditTrail.map((entry) => (
                 <TimelineItem
                   key={entry.id}
-                  at={entry.at}
+                  at={formatTimeLabel(entry.at)}
                   title={entry.action}
-                  body={`${entry.actor} · ${entry.details}`}
+                  body={formatAuditBody(entry)}
                 />
               ))}
             </div>
@@ -525,6 +521,30 @@ function formatCompactNumber(value: number) {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
+}
+
+function formatTimeLabel(value: string) {
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return formatRelativeTime(parsed);
+}
+
+function formatAuditBody(entry: {
+  actor: string;
+  details: string;
+  beforeState?: string;
+  afterState?: string;
+}) {
+  const stateChange =
+    entry.beforeState && entry.afterState
+      ? ` (${entry.beforeState} → ${entry.afterState})`
+      : "";
+
+  return `${entry.actor} · ${entry.details}${stateChange}`;
 }
 
 function OwnerRow({

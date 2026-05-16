@@ -297,7 +297,7 @@ export const controlDataset: ControlDataset = {
         "ticket-linear-142",
         "flag-checkout-v2",
       ],
-      state: "escalated",
+      state: "triaged",
       triggeredRuleIds: [
         "rule-critical-pr-stale",
         "rule-production-deploy-blocked",
@@ -320,7 +320,7 @@ export const controlDataset: ControlDataset = {
         "deploy-worker-canary",
         "ticket-linear-188",
       ],
-      state: "open",
+      state: "detected",
       triggeredRuleIds: [
         "rule-failed-canary",
         "rule-missing-owner",
