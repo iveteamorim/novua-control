@@ -1,10 +1,6 @@
 import Link from "next/link";
 
-import {
-  getDashboardSnapshot,
-  getSourceOverview,
-} from "@/lib/control/engine";
-import { formatRelativeTime } from "@/lib/control/normalize";
+import { getDashboardSnapshot, getSourceOverview } from "@/lib/control/engine";
 import type { ControlArtifact } from "@/lib/control/types";
 
 const severityStyles = {
@@ -31,27 +27,6 @@ export default async function Home() {
   const impactedUsers = getNumberMetadata(blockedDeploy, "impactedUsers");
   const openHours = getNumberMetadata(blockedPr, "openHours");
   const rolloutPercentage = getNumberMetadata(blockedFlag, "rolloutPercentage");
-
-  const timeline = [
-    {
-      at: blockedPr?.updatedAt ?? "19h ago",
-      title: "API review still waiting",
-      body:
-        blockedPr?.summary ?? "The checkout API change still has no explicit backend owner.",
-    },
-    {
-      at: blockedDeploy?.updatedAt ?? "4h ago",
-      title: "Production deploy stopped",
-      body: blockedDeploy?.summary ?? "The web-checkout deploy cannot continue.",
-    },
-    {
-      at: blockedTicket?.updatedAt ?? "2h ago",
-      title: "Customer release blocked",
-      body:
-        blockedTicket?.summary ??
-        "The customer-facing release is still waiting on the blocked deploy path.",
-    },
-  ];
 
   const criticalSignals = [
     blockedPr?.owner
@@ -83,8 +58,8 @@ export default async function Home() {
                 Checkout release blocked
               </h1>
               <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                One release is blocked. This console shows the blocker, the missing
-                owner, and the next move.
+                Checkout cannot ship until a backend owner clears the blocked API
+                review or the team removes checkout-v2 from today&apos;s release.
               </p>
             </div>
 
@@ -168,16 +143,6 @@ export default async function Home() {
                   "checkout-v2-rollout is still queued because the deploy gate never cleared."}
               </p>
             </div>
-
-            <div className="mt-4 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
-                What should the team do now?
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
-                Assign the backend owner now. If nobody can take it, remove
-                checkout-v2 from today&apos;s release.
-              </p>
-            </div>
           </div>
 
           <div className="space-y-6">
@@ -208,6 +173,11 @@ export default async function Home() {
                   value={blockedPr?.owner ?? "Missing owner"}
                   status="must clear the blocked API review"
                   critical
+                />
+                <OwnerRow
+                  label="Deploy owner"
+                  value={blockedDeploy?.owner ?? "Frontend"}
+                  status="waiting on the API review to unblock shipping"
                 />
               </div>
 
@@ -246,53 +216,39 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="Incident history"
-              title="How did it get here?"
-            />
+        <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+          <SectionHeader
+            eyebrow="Why blocked"
+            title="Why did the system escalate this?"
+          />
 
-            <div className="mt-5 space-y-4">
-              {timeline.map((item) => (
-                <TimelineItem
-                  key={`${item.at}-${item.title}`}
-                  at={formatTimeLabel(item.at)}
-                  title={item.title}
-                  body={item.body}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="What the team should remember"
-              title="If nobody acts now"
-            />
-
-            <ul className="mt-5 space-y-3 text-sm leading-7 text-[#615850]">
-              <li className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-                <span>Production deploy stays blocked.</span>
+          <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+            {criticalSignals.map((signal) => (
+              <li
+                key={signal}
+                className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3 text-sm leading-7 text-[#615850]"
+              >
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
+                <span>{signal}</span>
               </li>
-              <li className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-                <span>Customer-facing release stays off today&apos;s train.</span>
-              </li>
-              <li className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-                <span>checkout-v2 rollout remains stuck at {rolloutPercentage ?? 0}%.</span>
-              </li>
-            </ul>
-          </div>
+            ))}
+          </ul>
         </section>
 
         <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-          <SectionHeader
-            eyebrow="Source systems"
-            title="Where is this evidence coming from?"
-          />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <SectionHeader
+              eyebrow="Connected systems"
+              title="Evidence connected"
+              description="Full incident history, audit trail, and raw signals live inside the incident trace."
+            />
+            <Link
+              href={`/alerts/${topAlert.id}`}
+              className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+            >
+              Open incident trace
+            </Link>
+          </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {sourceOverview.map((source) => (
@@ -359,16 +315,6 @@ function formatCompactNumber(value: number) {
   }).format(value);
 }
 
-function formatTimeLabel(value: string) {
-  const parsed = new Date(value);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return formatRelativeTime(parsed);
-}
-
 function OwnerRow({
   label,
   value,
@@ -428,27 +374,7 @@ function IncidentStep({
 function FlowArrow({ label }: { label: string }) {
   return (
     <div className="pl-4 text-xs uppercase tracking-[0.24em] text-[#93867b]">
-      ↓ {label}
-    </div>
-  );
-}
-
-function TimelineItem({
-  at,
-  title,
-  body,
-}: {
-  at: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="grid gap-2 rounded-[1.2rem] border border-black/6 bg-[#f7f7f4] p-4 sm:grid-cols-[120px_1fr]">
-      <div className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{at}</div>
-      <div>
-        <p className="text-sm font-semibold text-[#17120f]">{title}</p>
-        <p className="mt-1 text-sm leading-6 text-[#615850]">{body}</p>
-      </div>
+      {label}
     </div>
   );
 }
