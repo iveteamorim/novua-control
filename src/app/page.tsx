@@ -127,7 +127,8 @@ export default async function Home() {
                 Checkout release blocked
               </h1>
               <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                API review unowned. Deploy blocked. Launch ticket downstream.
+                This tool watches GitHub, Vercel, and Linear. It tells the team what
+                release is blocked, why, who is missing, and what to do next.
               </p>
             </div>
 
@@ -159,16 +160,23 @@ export default async function Home() {
               href="/ingestion-preview"
               className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
             >
-              Ingestion
+              View raw signals
             </Link>
+          </div>
+
+          <div className="mt-5 grid gap-3 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4 md:grid-cols-4">
+            <MiniGuideStep step="1" label="Blocked release" value="Checkout cannot ship." />
+            <MiniGuideStep step="2" label="Cause" value="API review still unowned." />
+            <MiniGuideStep step="3" label="Owner gap" value="Backend owner missing." />
+            <MiniGuideStep step="4" label="Next move" value="Assign owner or pull it from release." />
           </div>
         </header>
 
         <section className="grid items-start gap-6 xl:grid-cols-[0.95fr_1.18fr_0.92fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Action console"
-              title="Next move"
+              eyebrow="4. Next move"
+              title="What should the team do now?"
             />
 
             <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
@@ -181,8 +189,8 @@ export default async function Home() {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <CaseFact label="Risk score" value={`${topAlert.riskScore}`} />
-              <CaseFact label="Incident state" value={topAlert.state} />
+              <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
+              <CaseFact label="Current state" value={topAlert.state} />
               <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
               <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
             </div>
@@ -190,8 +198,8 @@ export default async function Home() {
 
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Release path"
-              title="Blocked path"
+              eyebrow="1. Blocked release"
+              title="What is blocked?"
             />
 
             <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr] xl:grid-cols-1">
@@ -218,7 +226,7 @@ export default async function Home() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                    Rollout gate
+                    Release gate
                   </p>
                   <h3 className="mt-2 text-base font-semibold text-[#17120f]">
                     {blockedFlag?.label ?? "checkout-v2-rollout"}
@@ -236,7 +244,7 @@ export default async function Home() {
 
             <div className="mt-4 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                Signals behind the alert
+                Why it is blocked
               </p>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
                 {criticalSignals.map((signal) => (
@@ -251,37 +259,37 @@ export default async function Home() {
 
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Ownership graph"
-              title="Owners"
+              eyebrow="3. Owner gap"
+              title="Who needs to act?"
             />
 
             <div className="mt-5 space-y-3">
               <OwnerRow
-                label="Release coordination"
+                label="Escalation owner"
                 value={topAlert.owner ?? "Unassigned"}
-                status="tracking release"
+                status="driving the decision"
               />
               <OwnerRow
-                label="Backend approval"
+                label="Backend owner"
                 value={blockedPr?.owner ?? "Missing owner"}
-                status="blocking upstream"
+                status="missing on the blocked review"
                 critical
               />
               <OwnerRow
-                label="Frontend deploy"
+                label="Deploy owner"
                 value={blockedDeploy?.owner ?? "Frontend"}
-                status="waiting on API dependency"
+                status="waiting on API review"
               />
               <OwnerRow
-                label="Launch ticket"
+                label="Ticket owner"
                 value={blockedTicket?.owner ?? "Growth PM"}
-                status="downstream blocked"
+                status="blocked by deployment"
               />
             </div>
 
             <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                Secondary risk
+                Another problem forming
               </p>
               <h3 className="mt-2 text-base font-semibold text-[#17120f]">
                 {secondaryAlert?.title ?? "Refund queue risk rising"}
@@ -297,8 +305,8 @@ export default async function Home() {
         <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Escalation timeline"
-              title="Timeline"
+              eyebrow="2. Why it escalated"
+              title="What happened?"
             />
 
             <div className="mt-5 space-y-4">
@@ -315,8 +323,8 @@ export default async function Home() {
 
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Audit trail"
-              title="State changes"
+              eyebrow="5. System trace"
+              title="What did the system record?"
             />
 
             <div className="mt-5 space-y-4">
@@ -334,8 +342,8 @@ export default async function Home() {
 
         <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
-            eyebrow="Ingestion status"
-            title="Connected evidence"
+            eyebrow="6. Signals"
+            title="Where did this evidence come from?"
           />
 
           <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -455,6 +463,25 @@ function CompactFact({ label, value }: { label: string; value: string }) {
     <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#8d8176]">{label}</p>
       <p className="mt-2 text-lg font-semibold text-[#17120f]">{value}</p>
+    </div>
+  );
+}
+
+function MiniGuideStep({
+  step,
+  label,
+  value,
+}: {
+  step: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
+      <p className="text-[11px] uppercase tracking-[0.22em] text-[#93867b]">
+        {step}. {label}
+      </p>
+      <p className="mt-2 text-sm font-medium leading-6 text-[#2c241f]">{value}</p>
     </div>
   );
 }
