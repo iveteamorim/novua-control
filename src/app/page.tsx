@@ -110,6 +110,17 @@ export default async function Home() {
       ? `${githubEvidence.owner} currently owns the upstream review path`
       : "No backend owner or release fallback explicitly assigned",
   ];
+  const ownershipGaps = [
+    blockedPr?.owner
+      ? `Backend approval currently sits with ${blockedPr.owner}.`
+      : "Backend approval still has no explicit owner.",
+    topAlert.owner
+      ? `${topAlert.owner} owns escalation, but no release fallback is named yet.`
+      : "Escalation owner is still missing.",
+    blockedDeploy?.owner
+      ? `${blockedDeploy.owner} cannot move until the API dependency clears.`
+      : "Frontend deploy owner is implied but not explicitly recorded.",
+  ];
 
   return (
     <main className="min-h-screen bg-[#f6f3ee] text-[#151311]">
@@ -176,7 +187,7 @@ export default async function Home() {
           </div>
         </header>
 
-        <section className="grid gap-6 xl:grid-cols-[0.95fr_1.18fr_0.92fr]">
+        <section className="grid items-start gap-6 xl:grid-cols-[0.95fr_1.18fr_0.92fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Action console"
@@ -313,6 +324,20 @@ export default async function Home() {
                 value={blockedTicket?.owner ?? "Growth PM"}
                 status="downstream blocked"
               />
+            </div>
+
+            <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+                Coverage gaps
+              </p>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
+                {ownershipGaps.map((gap) => (
+                  <li key={gap} className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
+                    <span>{gap}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
