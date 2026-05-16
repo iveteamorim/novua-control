@@ -64,8 +64,7 @@ export default async function Home() {
           ? "Live GitHub signal detected"
           : "PR pending review",
       body:
-        githubEvidence?.summary ??
-        "Critical API contract change has been waiting too long without a backend owner.",
+        githubEvidence?.summary ?? "PR waiting on review; backend owner still missing.",
     },
     {
       at:
@@ -80,46 +79,32 @@ export default async function Home() {
         (vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
           ? vercelEvidence.summary
           : blockedDeploy?.summary) ??
-        "Production deployment is blocked while the unresolved dependency remains open.",
+        "Production deploy blocked by upstream dependency.",
     },
     {
       at: linearEvidence?.updatedAt ?? "2h ago",
       title: "Downstream ticket delayed",
-      body:
-        linearEvidence?.summary ??
-        "Customer-facing release work is blocked by the deployment delay.",
+      body: linearEvidence?.summary ?? "Launch ticket blocked downstream.",
     },
     {
       at: "12m ago",
       title: "Escalation triggered",
-      body: topAlert.recommendedAction,
+      body: "Escalated to release captain for immediate ownership decision.",
     },
   ];
 
   const criticalSignals = [
-    buildSignalSummary(githubEvidence, "Critical PR pending review for 19h"),
+    blockedPr?.owner
+      ? `${blockedPr.owner} owns the upstream review path.`
+      : "Backend owner missing on API review.",
     buildSignalSummary(
       vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
         ? vercelEvidence
         : null,
-      "Frontend deploy blocked for 4h",
+      "Frontend deploy blocked for 4h.",
     ),
-    buildSignalSummary(linearEvidence, "Customer-facing launch ticket unresolved"),
-    buildSignalSummary(blockedFlag, "Feature flag rollout still queued"),
-    githubEvidence?.owner
-      ? `${githubEvidence.owner} currently owns the upstream review path`
-      : "No backend owner or release fallback explicitly assigned",
-  ];
-  const ownershipGaps = [
-    blockedPr?.owner
-      ? `Backend approval currently sits with ${blockedPr.owner}.`
-      : "Backend approval still has no explicit owner.",
-    topAlert.owner
-      ? `${topAlert.owner} owns escalation, but no release fallback is named yet.`
-      : "Escalation owner is still missing.",
-    blockedDeploy?.owner
-      ? `${blockedDeploy.owner} cannot move until the API dependency clears.`
-      : "Frontend deploy owner is implied but not explicitly recorded.",
+    buildSignalSummary(linearEvidence, "Launch ticket blocked downstream."),
+    buildSignalSummary(blockedFlag, "Rollout gate still closed."),
   ];
 
   return (
@@ -142,9 +127,7 @@ export default async function Home() {
                 Checkout release blocked
               </h1>
               <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                The API review has no clear backend owner. Production cannot ship,
-                the launch ticket is still blocked, and checkout-v2 remains stuck in
-                rollout.
+                API review unowned. Deploy blocked. Launch ticket downstream.
               </p>
             </div>
 
@@ -176,13 +159,7 @@ export default async function Home() {
               href="/ingestion-preview"
               className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
             >
-              Inspect ingestion
-            </Link>
-            <Link
-              href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20walkthrough"
-              className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
-            >
-              Request walkthrough
+              Ingestion
             </Link>
           </div>
         </header>
@@ -191,8 +168,7 @@ export default async function Home() {
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Action console"
-              title="What should happen in the next hour"
-              description={topAlert.recommendedAction}
+              title="Next move"
             />
 
             <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
@@ -200,8 +176,7 @@ export default async function Home() {
                 Next action
               </p>
               <p className="mt-3 text-sm leading-7 text-[#4c4138]">
-                Assign the backend owner, name a release fallback, or remove
-                checkout-v2 from today&apos;s release train.
+                Assign backend owner or remove checkout-v2 from today&apos;s release.
               </p>
             </div>
 
@@ -211,33 +186,12 @@ export default async function Home() {
               <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
               <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
             </div>
-
-            <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                If nobody acts
-              </p>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
-                <li className="flex gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-                  <span>Production deploy remains blocked.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-                  <span>Launch ticket stays unresolved for a customer-facing release.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-                  <span>checkout-v2 rollout stays stuck at {rolloutPercentage ?? 0}%.</span>
-                </li>
-              </ul>
-            </div>
           </div>
 
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Release path"
-              title="One blocked review creates the incident"
-              description="This is not a dashboard summary. This is the exact dependency chain the system escalated."
+              title="Blocked path"
             />
 
             <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr] xl:grid-cols-1">
@@ -298,8 +252,7 @@ export default async function Home() {
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Ownership graph"
-              title="Who must move now"
-              description="Nobody is missing in theory. Someone is missing in practice."
+              title="Owners"
             />
 
             <div className="mt-5 space-y-3">
@@ -328,21 +281,7 @@ export default async function Home() {
 
             <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                Coverage gaps
-              </p>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
-                {ownershipGaps.map((gap) => (
-                  <li key={gap} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
-                    <span>{gap}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                Background risk
+                Secondary risk
               </p>
               <h3 className="mt-2 text-base font-semibold text-[#17120f]">
                 {secondaryAlert?.title ?? "Refund queue risk rising"}
@@ -359,8 +298,7 @@ export default async function Home() {
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Escalation timeline"
-              title="Why this escalated"
-              description="The system only escalates when the event chain becomes strong enough to justify an intervention."
+              title="Timeline"
             />
 
             <div className="mt-5 space-y-4">
@@ -378,8 +316,7 @@ export default async function Home() {
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Audit trail"
-              title="How the state changed"
-              description="The incident is compressed into one decision, but every escalation still keeps an operational trace."
+              title="State changes"
             />
 
             <div className="mt-5 space-y-4">
@@ -398,8 +335,7 @@ export default async function Home() {
         <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
             eyebrow="Ingestion status"
-            title="The incident stays simple. The evidence does not."
-            description="The console leads with one blocked release. Underneath, it keeps the source systems legible."
+            title="Connected evidence"
           />
 
           <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -681,13 +617,15 @@ function SectionHeader({
 }: {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
 }) {
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.32em] text-amber-700/82">{eyebrow}</p>
       <h2 className="mt-3 text-2xl font-semibold text-[#17120f]">{title}</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-7 text-[#655c54]">{description}</p>
+      {description ? (
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-[#655c54]">{description}</p>
+      ) : null}
     </div>
   );
 }
