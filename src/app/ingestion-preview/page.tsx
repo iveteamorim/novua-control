@@ -47,7 +47,7 @@ export default function IngestionPreviewPage() {
     <main className="min-h-screen bg-white text-[#151311]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
         <header className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_24px_80px_rgba(17,24,39,0.05)]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-5">
             <div className="space-y-4">
               <Link
                 href="/"
@@ -62,13 +62,12 @@ export default function IngestionPreviewPage() {
                 Real events become operational signals.
               </h1>
               <p className="max-w-3xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                Control does not stop at dashboards. It ingests GitHub and Vercel
-                events, normalizes them, and extracts the signals that drive
-                deterministic escalation.
+                This page shows one webhook per source, what Control extracts from
+                it, and how that payload becomes incident-ready evidence.
               </p>
             </div>
 
-            <div className="grid gap-3 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-5 sm:min-w-[300px]">
+            <div className="grid gap-3 sm:grid-cols-3">
               <StatCard label="Preview sources" value="GitHub + Vercel" />
               <StatCard label="Output shape" value="Artifacts · Events · Signals" />
               <StatCard label="Decision model" value="Deterministic before AI" />
@@ -76,7 +75,7 @@ export default function IngestionPreviewPage() {
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-2">
+        <section className="grid gap-6 xl:grid-cols-2">
           <PreviewPanel
             source="GitHub webhook"
             eventType="pull_request"
@@ -116,10 +115,15 @@ function PreviewPanel({
 }) {
   return (
     <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-      <div className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.32em] text-amber-700/82">{source}</p>
-        <h2 className="text-2xl font-semibold text-[#17120f]">{eventType}</h2>
-        <p className="text-sm leading-7 text-[#655c54]">{summary}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <p className="text-xs uppercase tracking-[0.32em] text-amber-700/82">{source}</p>
+          <h2 className="text-2xl font-semibold text-[#17120f]">{eventType}</h2>
+          <p className="text-sm leading-7 text-[#655c54]">{summary}</p>
+        </div>
+        <div className="inline-flex w-fit rounded-full border border-black/8 bg-[#f7f7f4] px-3 py-1.5 text-xs font-medium uppercase tracking-[0.22em] text-[#6f645b]">
+          incoming event
+        </div>
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -128,17 +132,17 @@ function PreviewPanel({
         <CountCard label="Signals" value={String(preview.signals.length)} />
       </div>
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
-            Incoming payload
-          </p>
-          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap break-words text-xs leading-6 text-[#3f352d]">
-            {JSON.stringify(payload, null, 2)}
-          </pre>
-        </div>
-
+      <div className="mt-6 grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="space-y-4">
+          <div className="rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
+              What came in
+            </p>
+            <p className="mt-3 text-sm leading-7 text-[#615850]">
+              The raw webhook arrives first. Control keeps the original payload,
+              but only a small subset becomes structured operational evidence.
+            </p>
+          </div>
           <OutputBlock
             title="Artifact"
             items={preview.artifacts.map((artifact) => ({
@@ -146,6 +150,9 @@ function PreviewPanel({
               detail: `${artifact.status} · ${artifact.summary}`,
             }))}
           />
+        </div>
+
+        <div className="space-y-4">
           <OutputBlock
             title="Events extracted"
             items={preview.events.map((event) => ({
@@ -162,6 +169,15 @@ function PreviewPanel({
           />
         </div>
       </div>
+
+      <details className="mt-4 rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
+        <summary className="cursor-pointer list-none text-xs font-medium uppercase tracking-[0.22em] text-[#6f645b]">
+          View raw payload
+        </summary>
+        <pre className="mt-4 overflow-x-auto whitespace-pre-wrap break-words text-xs leading-6 text-[#3f352d]">
+          {JSON.stringify(payload, null, 2)}
+        </pre>
+      </details>
     </div>
   );
 }
