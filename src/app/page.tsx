@@ -99,168 +99,172 @@ export default async function Home() {
         </header>
 
         <section className="grid items-start gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="Blocked release"
-              title="What cannot ship?"
-              description="checkout-v2 cannot ship because the checkout API review still blocks the deploy path."
-            />
+          <div className="flex flex-col gap-6">
+            <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <SectionHeader
+                eyebrow="Blocked release"
+                title="What cannot ship?"
+                description="checkout-v2 cannot ship because the checkout API review still blocks the deploy path."
+              />
 
-            <div className="mt-5 space-y-3">
-              <IncidentStep
-                tone="warning"
-                step="1"
-                title={blockedPr?.label ?? "checkout-api-contract"}
-                body={blockedPr?.summary ?? "Critical API change is still waiting on review."}
-              />
-              <FlowArrow label="blocks deploy" />
-              <IncidentStep
-                tone="neutral"
-                step="2"
-                title={blockedDeploy?.label ?? "web-checkout-production"}
-                body={blockedDeploy?.summary ?? "Production deploy cannot continue."}
-              />
-              <FlowArrow label="delays launch" />
-              <IncidentStep
-                tone="critical"
-                step="3"
-                title={blockedTicket?.label ?? "LIN-142 checkout banner release"}
-                body={blockedTicket?.summary ?? "Customer-facing work remains unresolved downstream."}
-              />
-            </div>
-
-            <div className="mt-4 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                    Release gate
-                  </p>
-                  <h3 className="mt-2 text-base font-semibold text-[#17120f]">
-                    {blockedFlag?.label ?? "checkout-v2-rollout"}
-                  </h3>
-                </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-[#7e746b]">
-                  {rolloutPercentage ?? 0}% released
-                </span>
+              <div className="mt-5 space-y-3">
+                <IncidentStep
+                  tone="warning"
+                  step="1"
+                  title={blockedPr?.label ?? "checkout-api-contract"}
+                  body={blockedPr?.summary ?? "Critical API change is still waiting on review."}
+                />
+                <FlowArrow label="blocks deploy" />
+                <IncidentStep
+                  tone="neutral"
+                  step="2"
+                  title={blockedDeploy?.label ?? "web-checkout-production"}
+                  body={blockedDeploy?.summary ?? "Production deploy cannot continue."}
+                />
+                <FlowArrow label="delays launch" />
+                <IncidentStep
+                  tone="critical"
+                  step="3"
+                  title={blockedTicket?.label ?? "LIN-142 checkout banner release"}
+                  body={blockedTicket?.summary ?? "Customer-facing work remains unresolved downstream."}
+                />
               </div>
-              <p className="mt-2 text-sm leading-6 text-[#615850]">
-                {blockedFlag?.summary ??
-                  "checkout-v2-rollout is still queued because the deploy gate never cleared."}
-              </p>
-            </div>
+
+              <div className="mt-4 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+                      Release gate
+                    </p>
+                    <h3 className="mt-2 text-base font-semibold text-[#17120f]">
+                      {blockedFlag?.label ?? "checkout-v2-rollout"}
+                    </h3>
+                  </div>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-[#7e746b]">
+                    {rolloutPercentage ?? 0}% released
+                  </span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[#615850]">
+                  {blockedFlag?.summary ??
+                    "checkout-v2-rollout is still queued because the deploy gate never cleared."}
+                </p>
+              </div>
+            </section>
+
+            <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <SectionHeader
+                  eyebrow="Connected systems"
+                  title="Evidence connected"
+                  description="Full incident history, audit trail, and raw signals live inside the incident trace."
+                />
+                <Link
+                  href={`/alerts/${topAlert.id}`}
+                  className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+                >
+                  Open incident trace
+                </Link>
+              </div>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+                {sourceOverview.map((source) => (
+                  <SourcePill
+                    key={source.source}
+                    title={getSourceTitle(source.source)}
+                    mode={source.mode}
+                    stats={`${source.signals} signals · ${source.events} events`}
+                  />
+                ))}
+              </div>
+            </section>
           </div>
 
-          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="Action required"
-              title="Who should act now?"
-            />
-
-            <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
-                Next move
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
-                Assign the backend owner now. If nobody can take it, remove
-                checkout-v2 from today&apos;s release.
-              </p>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-3">
-              <form action={assignBackendOwnerAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
-                  Assign backend owner
-                </button>
-              </form>
-              <form action={startMitigationAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
-                  Start mitigation
-                </button>
-              </form>
-              <form action={resolveIncidentAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
-                  Resolve incident
-                </button>
-              </form>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <OwnerRow
-                label="Release captain"
-                value={topAlert.owner ?? "Unassigned"}
-                status="must own the decision now"
+          <div className="flex flex-col gap-6">
+            <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <SectionHeader
+                eyebrow="Action required"
+                title="Who should act now?"
               />
-              <OwnerRow
-                label="Backend owner"
-                value={blockedPr?.owner ?? "Missing owner"}
-                status="must clear the blocked API review"
-                critical
-              />
-              <OwnerRow
-                label="Deploy owner"
-                value={blockedDeploy?.owner ?? "Frontend"}
-                status="waiting on the API review to unblock shipping"
-              />
-            </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
-              <CaseFact label="Current state" value={topAlert.state} />
-              <CaseFact
-                label="Time blocked"
-                value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
+              <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
+                <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
+                  Next move
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[#4c4138]">
+                  Assign the backend owner now. If nobody can take it, remove
+                  checkout-v2 from today&apos;s release.
+                </p>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <form action={assignBackendOwnerAction.bind(null, topAlert.id)}>
+                  <button className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
+                    Assign backend owner
+                  </button>
+                </form>
+                <form action={startMitigationAction.bind(null, topAlert.id)}>
+                  <button className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
+                    Start mitigation
+                  </button>
+                </form>
+                <form action={resolveIncidentAction.bind(null, topAlert.id)}>
+                  <button className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
+                    Resolve incident
+                  </button>
+                </form>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <OwnerRow
+                  label="Release captain"
+                  value={topAlert.owner ?? "Unassigned"}
+                  status="must own the decision now"
+                />
+                <OwnerRow
+                  label="Backend owner"
+                  value={blockedPr?.owner ?? "Missing owner"}
+                  status="must clear the blocked API review"
+                  critical
+                />
+                <OwnerRow
+                  label="Deploy owner"
+                  value={blockedDeploy?.owner ?? "Frontend"}
+                  status="waiting on the API review to unblock shipping"
+                />
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
+                <CaseFact label="Current state" value={topAlert.state} />
+                <CaseFact
+                  label="Time blocked"
+                  value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
+                />
+                <CaseFact
+                  label="Users affected"
+                  value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
+                />
+              </div>
+            </section>
+
+            <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <SectionHeader
+                eyebrow="Why blocked"
+                title="Why did the system escalate this?"
               />
-              <CaseFact
-                label="Users affected"
-                value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
-              />
-            </div>
-          </div>
-        </section>
 
-        <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-          <SectionHeader
-            eyebrow="Why blocked"
-            title="Why did the system escalate this?"
-          />
-
-          <ul className="mt-5 grid gap-3 lg:grid-cols-2">
-            {criticalSignals.map((signal) => (
-              <li
-                key={signal}
-                className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3 text-sm leading-7 text-[#615850]"
-              >
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
-                <span>{signal}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeader
-              eyebrow="Connected systems"
-              title="Evidence connected"
-              description="Full incident history, audit trail, and raw signals live inside the incident trace."
-            />
-            <Link
-              href={`/alerts/${topAlert.id}`}
-              className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
-            >
-              Open incident trace
-            </Link>
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            {sourceOverview.map((source) => (
-              <SourcePill
-                key={source.source}
-                title={getSourceTitle(source.source)}
-                mode={source.mode}
-                stats={`${source.signals} signals · ${source.events} events`}
-              />
-            ))}
+              <ul className="mt-5 grid gap-3">
+                {criticalSignals.map((signal) => (
+                  <li
+                    key={signal}
+                    className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3 text-sm leading-7 text-[#615850]"
+                  >
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
+                    <span>{signal}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
           </div>
         </section>
       </div>
