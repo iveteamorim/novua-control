@@ -145,73 +145,52 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-              <SectionHeader
-                eyebrow="Action required"
-                title="Who should act now?"
-              />
+          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+            <SectionHeader
+              eyebrow="Action required"
+              title="Who should act now?"
+            />
 
-              <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
-                  Next move
-                </p>
-                <p className="mt-3 text-sm leading-7 text-[#4c4138]">
-                  Assign the backend owner now. If nobody can take it, remove
-                  checkout-v2 from today&apos;s release.
-                </p>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <OwnerRow
-                  label="Release captain"
-                  value={topAlert.owner ?? "Unassigned"}
-                  status="must own the decision now"
-                />
-                <OwnerRow
-                  label="Backend owner"
-                  value={blockedPr?.owner ?? "Missing owner"}
-                  status="must clear the blocked API review"
-                  critical
-                />
-                <OwnerRow
-                  label="Deploy owner"
-                  value={blockedDeploy?.owner ?? "Frontend"}
-                  status="waiting on the API review to unblock shipping"
-                />
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
-                <CaseFact label="Current state" value={topAlert.state} />
-                <CaseFact
-                  label="Time blocked"
-                  value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
-                />
-                <CaseFact
-                  label="Users affected"
-                  value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
-                />
-              </div>
+            <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
+                Next move
+              </p>
+              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
+                Assign the backend owner now. If nobody can take it, remove
+                checkout-v2 from today&apos;s release.
+              </p>
             </div>
 
-            <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-              <SectionHeader
-                eyebrow="Why blocked"
-                title="Why did the system escalate this?"
+            <div className="mt-4 space-y-3">
+              <OwnerRow
+                label="Release captain"
+                value={topAlert.owner ?? "Unassigned"}
+                status="must own the decision now"
               />
+              <OwnerRow
+                label="Backend owner"
+                value={blockedPr?.owner ?? "Missing owner"}
+                status="must clear the blocked API review"
+                critical
+              />
+              <OwnerRow
+                label="Deploy owner"
+                value={blockedDeploy?.owner ?? "Frontend"}
+                status="waiting on the API review to unblock shipping"
+              />
+            </div>
 
-              <ul className="mt-5 space-y-3 text-sm leading-7 text-[#615850]">
-                {criticalSignals.map((signal) => (
-                  <li
-                    key={signal}
-                    className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3"
-                  >
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
-                    <span>{signal}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
+              <CaseFact label="Current state" value={topAlert.state} />
+              <CaseFact
+                label="Time blocked"
+                value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
+              />
+              <CaseFact
+                label="Users affected"
+                value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
+              />
             </div>
           </div>
         </section>
