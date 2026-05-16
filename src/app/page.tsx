@@ -18,7 +18,6 @@ const severityStyles = {
 export default async function Home() {
   const snapshot = await getDashboardSnapshot();
   const topAlert = snapshot.primaryAlert;
-  const secondaryAlert = snapshot.alerts[1] ?? null;
   const [sourceOverview, artifactsBySource, auditTrail] = await Promise.all([
     getSourceOverview(),
     getArtifactsBySource(),
@@ -127,8 +126,8 @@ export default async function Home() {
                 Checkout release blocked
               </h1>
               <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                This tool watches GitHub, Vercel, and Linear. It tells the team what
-                release is blocked, why, who is missing, and what to do next.
+                Find what cannot ship, why it is blocked, who is missing, and what
+                the team should do next.
               </p>
             </div>
 
@@ -163,43 +162,14 @@ export default async function Home() {
               View raw signals
             </Link>
           </div>
-
-          <div className="mt-5 grid gap-3 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4 md:grid-cols-4">
-            <MiniGuideStep step="1" label="Blocked release" value="Checkout cannot ship." />
-            <MiniGuideStep step="2" label="Cause" value="API review still unowned." />
-            <MiniGuideStep step="3" label="Owner gap" value="Backend owner missing." />
-            <MiniGuideStep step="4" label="Next move" value="Assign owner or pull it from release." />
-          </div>
         </header>
 
-        <section className="grid items-start gap-6 xl:grid-cols-[0.95fr_1.18fr_0.92fr]">
+        <section className="grid items-start gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="4. Next move"
-              title="What should the team do now?"
-            />
-
-            <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
-                Next action
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
-                Assign backend owner or remove checkout-v2 from today&apos;s release.
-              </p>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
-              <CaseFact label="Current state" value={topAlert.state} />
-              <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
-              <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
-            </div>
-          </div>
-
-          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="1. Blocked release"
-              title="What is blocked?"
+              eyebrow="Blocked release"
+              title="What cannot ship right now?"
+              description="checkout-v2 cannot ship because the checkout API review still blocks the deploy path."
             />
 
             <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr] xl:grid-cols-1">
@@ -242,62 +212,71 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="mt-4 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                Why it is blocked
+            <div className="mt-4 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
+                What should the team do now?
               </p>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
+              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
+                Assign the backend owner now. If nobody can take it, remove
+                checkout-v2 from today&apos;s release.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <SectionHeader
+                eyebrow="Why blocked"
+                title="What caused the incident?"
+              />
+
+              <ul className="mt-5 space-y-3 text-sm leading-7 text-[#615850]">
                 {criticalSignals.map((signal) => (
-                  <li key={signal} className="flex gap-3">
+                  <li key={signal} className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
                     <span>{signal}</span>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
 
-          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="3. Owner gap"
-              title="Who needs to act?"
-            />
+            <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <SectionHeader
+                eyebrow="Owners"
+                title="Who needs to act?"
+              />
 
-            <div className="mt-5 space-y-3">
-              <OwnerRow
-                label="Escalation owner"
-                value={topAlert.owner ?? "Unassigned"}
-                status="driving the decision"
-              />
-              <OwnerRow
-                label="Backend owner"
-                value={blockedPr?.owner ?? "Missing owner"}
-                status="missing on the blocked review"
-                critical
-              />
-              <OwnerRow
-                label="Deploy owner"
-                value={blockedDeploy?.owner ?? "Frontend"}
-                status="waiting on API review"
-              />
-              <OwnerRow
-                label="Ticket owner"
-                value={blockedTicket?.owner ?? "Growth PM"}
-                status="blocked by deployment"
-              />
-            </div>
+              <div className="mt-5 space-y-3">
+                <OwnerRow
+                  label="Escalation owner"
+                  value={topAlert.owner ?? "Unassigned"}
+                  status="driving the decision"
+                />
+                <OwnerRow
+                  label="Backend owner"
+                  value={blockedPr?.owner ?? "Missing owner"}
+                  status="missing on the blocked review"
+                  critical
+                />
+                <OwnerRow
+                  label="Deploy owner"
+                  value={blockedDeploy?.owner ?? "Frontend"}
+                  status="waiting on API review"
+                />
+              </div>
 
-            <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
-                Another problem forming
-              </p>
-              <h3 className="mt-2 text-base font-semibold text-[#17120f]">
-                {secondaryAlert?.title ?? "Refund queue risk rising"}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-[#615850]">
-                {secondaryAlert?.summary ??
-                  "A secondary incident is already forming in the background while checkout remains blocked."}
-              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
+                <CaseFact label="Current state" value={topAlert.state} />
+                <CaseFact
+                  label="Time blocked"
+                  value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
+                />
+                <CaseFact
+                  label="Users affected"
+                  value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -305,8 +284,8 @@ export default async function Home() {
         <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="2. Why it escalated"
-              title="What happened?"
+              eyebrow="Incident history"
+              title="How did it get here?"
             />
 
             <div className="mt-5 space-y-4">
@@ -342,8 +321,8 @@ export default async function Home() {
 
         <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
-            eyebrow="6. Signals"
-            title="Where did this evidence come from?"
+            eyebrow="Source systems"
+            title="Where is this evidence coming from?"
           />
 
           <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -463,25 +442,6 @@ function CompactFact({ label, value }: { label: string; value: string }) {
     <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#8d8176]">{label}</p>
       <p className="mt-2 text-lg font-semibold text-[#17120f]">{value}</p>
-    </div>
-  );
-}
-
-function MiniGuideStep({
-  step,
-  label,
-  value,
-}: {
-  step: string;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
-      <p className="text-[11px] uppercase tracking-[0.22em] text-[#93867b]">
-        {step}. {label}
-      </p>
-      <p className="mt-2 text-sm font-medium leading-6 text-[#2c241f]">{value}</p>
     </div>
   );
 }
