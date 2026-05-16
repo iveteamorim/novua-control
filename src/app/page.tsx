@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import {
   getArtifactsBySource,
+  getAuditTrail,
   getDashboardSnapshot,
   getSourceOverview,
 } from "@/lib/control/engine";
@@ -14,12 +15,14 @@ const severityStyles = {
 };
 
 export default async function Home() {
-  const [snapshot, sourceOverview, artifactsBySource] = await Promise.all([
-    getDashboardSnapshot(),
+  const snapshot = await getDashboardSnapshot();
+  const topAlert = snapshot.primaryAlert;
+  const secondaryAlert = snapshot.alerts[1] ?? null;
+  const [sourceOverview, artifactsBySource, auditTrail] = await Promise.all([
     getSourceOverview(),
     getArtifactsBySource(),
+    getAuditTrail(topAlert.id),
   ]);
-  const topAlert = snapshot.primaryAlert;
 
   const findArtifact = (id: string) =>
     topAlert.artifacts.find((artifact) => artifact.id === id);
@@ -113,176 +116,186 @@ export default async function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-white text-[#151311]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
-        <header className="grid gap-6 rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_24px_80px_rgba(17,24,39,0.05)] lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="space-y-4">
-            <p className="text-xs font-medium uppercase tracking-[0.38em] text-amber-700/82">
-              One blocked release
-            </p>
-            <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#17120f] sm:text-5xl">
-              Checkout cannot ship.
-            </h1>
-            <p className="max-w-3xl text-base leading-8 text-[#5f564e] sm:text-lg">
-              An unresolved API review is blocking the production deploy, the
-              customer-facing launch ticket, and the checkout-v2 rollout across
-              GitHub, Vercel, and Linear.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={`/alerts/${topAlert.id}`}
-                className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
-              >
-                View incident trace
-              </Link>
-              <Link
-                href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20walkthrough"
-                className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
-              >
-                Request product walkthrough
-              </Link>
+    <main className="min-h-screen bg-[#f6f3ee] text-[#151311]">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+        <header className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_24px_80px_rgba(17,24,39,0.05)]">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="rounded-full border border-black/8 bg-[#f7f7f4] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#7e746b]">
+                  Novua Control
+                </span>
+                <span
+                  className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] ${severityStyles[topAlert.severity]}`}
+                >
+                  {topAlert.severity} incident
+                </span>
+              </div>
+              <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#17120f] sm:text-[3.2rem]">
+                Checkout release blocked
+              </h1>
+              <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
+                The API review has no clear backend owner. Production cannot ship,
+                the launch ticket is still blocked, and checkout-v2 remains stuck in
+                rollout.
+              </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <MetricCard
-                label="Release window"
-                value={releaseWindow}
-                accent="text-amber-700"
-              />
-              <MetricCard
+            <div className="grid gap-3 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-4 sm:grid-cols-2 xl:min-w-[380px]">
+              <CompactFact label="Release window" value={releaseWindow} />
+              <CompactFact
                 label="Users affected"
                 value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
-                accent="text-rose-700"
               />
-              <MetricCard
+              <CompactFact
                 label="Upstream delay"
                 value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
-                accent="text-stone-700"
               />
-              <MetricCard
-                label="Rollout stuck at"
-                value={`${rolloutPercentage ?? 0}%`}
-                accent="text-stone-700"
+              <CompactFact
+                label="Downstream blockers"
+                value={`${downstreamBlockers}`}
               />
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-black/6 bg-[#f7f7f4] p-5">
-            <p className="text-xs uppercase tracking-[0.3em] text-[#8d8176]">
-              What changed across systems
-            </p>
-            <div className="mt-4 space-y-3">
-              <SignalStep
-                source="GitHub"
-                title={githubEvidence?.label ?? "PR waiting on review"}
-                detail={
-                  githubEvidence?.summary ??
-                  "checkout-api-contract has no backend owner"
-                }
-                meta={githubEvidence?.updatedAt ?? "19h ago"}
-              />
-              <SignalStep
-                source="Vercel"
-                title={vercelEvidence?.label ?? "Deploy blocked"}
-                detail={
-                  vercelEvidence?.summary ??
-                  "web-checkout-production cannot ship"
-                }
-                meta={vercelEvidence?.updatedAt ?? "4h ago"}
-              />
-              <SignalStep
-                source="Linear"
-                title={linearEvidence?.label ?? "Ticket unresolved"}
-                detail={
-                  linearEvidence?.summary ??
-                  "launch work stays blocked downstream"
-                }
-                meta={linearEvidence?.updatedAt ?? "2h ago"}
-              />
-              <SignalStep
-                source="Control"
-                title="Escalation triggered"
-                detail="assign owner, name fallback, or rollback checkout-v2"
-                meta="12m ago"
-                terminal
-              />
-            </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href={`/alerts/${topAlert.id}`}
+              className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
+            >
+              Open incident trace
+            </Link>
+            <Link
+              href="/ingestion-preview"
+              className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+            >
+              Inspect ingestion
+            </Link>
+            <Link
+              href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20walkthrough"
+              className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+            >
+              Request walkthrough
+            </Link>
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+        <section className="grid gap-6 xl:grid-cols-[0.95fr_1.18fr_0.92fr]">
+          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Decision in focus"
+              eyebrow="Action console"
               title="What should happen in the next hour"
               description={topAlert.recommendedAction}
             />
 
-            <div className="mt-6 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-5">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
-                  <span
-                    className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] ${severityStyles[topAlert.severity]}`}
-                  >
-                    {topAlert.severity} risk
-                  </span>
-                  <h2 className="text-4xl font-semibold text-[#17120f]">
-                    {topAlert.riskScore}
-                    <span className="ml-2 text-lg font-medium text-[#7b726b]">
-                      risk score
-                    </span>
-                  </h2>
-                </div>
+            <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
+                Next action
+              </p>
+              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
+                Assign the backend owner, name a release fallback, or remove
+                checkout-v2 from today&apos;s release train.
+              </p>
+            </div>
 
-                <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-md">
-                  <CaseFact label="Affected systems" value={affectedSystems} />
-                  <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
-                  <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
-                  <CaseFact
-                    label="Downstream blockers"
-                    value={`${downstreamBlockers}`}
-                  />
-                </div>
-              </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <CaseFact label="Risk score" value={`${topAlert.riskScore}`} />
+              <CaseFact label="Escalation owner" value={topAlert.owner ?? "Unassigned"} />
+              <CaseFact label="Missing owner" value={blockedPr?.owner ?? "Backend owner missing"} />
+              <CaseFact label="Affected systems" value={affectedSystems} />
+            </div>
 
-              <div className="mt-6 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
-                <div className="rounded-[1.3rem] border border-black/6 bg-white p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#8d8176]">
-                    If nobody acts
-                  </p>
-                  <p className="mt-3 text-sm leading-7 text-[#615850]">
-                    The release train stays blocked, the launch ticket remains
-                    unresolved, and checkout-v2 stays at {rolloutPercentage ?? 0}% rollout
-                    while the upstream review has no explicit backend owner.
-                  </p>
-                </div>
-
-                <div className="rounded-[1.3rem] border border-black/6 bg-white p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#8d8176]">
-                    Signals behind the alert
-                  </p>
-                  <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
-                    {criticalSignals.map((signal) => (
-                      <li key={signal} className="flex gap-3">
-                        <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
-                        <span>{signal}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+            <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+                If nobody acts
+              </p>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
+                <li className="flex gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                  <span>Production deploy remains blocked.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                  <span>Launch ticket stays unresolved for a customer-facing release.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                  <span>checkout-v2 rollout stays stuck at {rolloutPercentage ?? 0}%.</span>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="Ownership chain"
-              title="Who must move now"
-              description="Control surfaces where coordination breaks before the team notices it too late."
+              eyebrow="Release path"
+              title="One blocked review creates the incident"
+              description="This is not a dashboard summary. This is the exact dependency chain the system escalated."
             />
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr] xl:grid-cols-1">
+              <FlowNode
+                tone="warning"
+                title={blockedPr?.label ?? "checkout-api-contract"}
+                body={blockedPr?.summary ?? "Critical API change is still waiting on review."}
+              />
+              <FlowArrow label="blocks deploy" />
+              <FlowNode
+                tone="neutral"
+                title={blockedDeploy?.label ?? "web-checkout-production"}
+                body={blockedDeploy?.summary ?? "Production deploy cannot continue."}
+              />
+              <FlowArrow label="delays launch" />
+              <FlowNode
+                tone="critical"
+                title={blockedTicket?.label ?? "LIN-142 checkout banner release"}
+                body={blockedTicket?.summary ?? "Customer-facing work remains unresolved downstream."}
+              />
+            </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+                    Rollout gate
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-[#17120f]">
+                    {blockedFlag?.label ?? "checkout-v2-rollout"}
+                  </h3>
+                </div>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-[#7e746b]">
+                  {rolloutPercentage ?? 0}% released
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[#615850]">
+                {blockedFlag?.summary ??
+                  "checkout-v2-rollout is still queued because the deploy gate never cleared."}
+              </p>
+            </div>
+
+            <div className="mt-4 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+                Signals behind the alert
+              </p>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#615850]">
+                {criticalSignals.map((signal) => (
+                  <li key={signal} className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
+                    <span>{signal}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+            <SectionHeader
+              eyebrow="Ownership graph"
+              title="Who must move now"
+              description="Nobody is missing in theory. Someone is missing in practice."
+            />
+
+            <div className="mt-5 space-y-3">
               <OwnerRow
                 label="Release coordination"
                 value={topAlert.owner ?? "Unassigned"}
@@ -305,61 +318,31 @@ export default async function Home() {
                 status="downstream blocked"
               />
             </div>
+
+            <div className="mt-5 rounded-[1.35rem] border border-black/6 bg-[#f7f7f4] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+                Background risk
+              </p>
+              <h3 className="mt-2 text-base font-semibold text-[#17120f]">
+                {secondaryAlert?.title ?? "Refund queue risk rising"}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#615850]">
+                {secondaryAlert?.summary ??
+                  "A secondary incident is already forming in the background while checkout remains blocked."}
+              </p>
+            </div>
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-            <SectionHeader
-              eyebrow="Dependency flow"
-              title="One blocked review creates a release chain."
-              description="This is the core behavior: one unresolved upstream dependency propagates execution risk downstream."
-            />
-
-            <div className="mt-6 space-y-3">
-              <FlowNode
-                tone="neutral"
-                title={releaseTrain?.label ?? "checkout release train"}
-                body={releaseTrain?.summary ?? "Release coordination sees the whole path blocked."}
-              />
-              <FlowArrow label="depends on" />
-              <FlowNode
-                tone="warning"
-                title={blockedPr?.label ?? "checkout-api-contract"}
-                body={blockedPr?.summary ?? "Critical API change is still waiting on review."}
-              />
-              <FlowArrow label="blocks" />
-              <FlowNode
-                tone="neutral"
-                title={blockedDeploy?.label ?? "web-checkout-production"}
-                body={blockedDeploy?.summary ?? "Production deploy cannot continue."}
-              />
-              <FlowArrow label="delays" />
-              <FlowNode
-                tone="critical"
-                title={blockedTicket?.label ?? "LIN-142 checkout banner release"}
-                body={blockedTicket?.summary ?? "Customer-facing work remains unresolved downstream."}
-              />
-              <div className="rounded-[1.15rem] border border-amber-300/60 bg-[#fff8e8] p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
-                  rollout still queued
-                </p>
-                <p className="mt-2 text-sm text-[#615850]">
-                  {blockedFlag?.summary ??
-                    "checkout-v2-rollout is still queued because the deploy gate never cleared."}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+        <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Escalation timeline"
               title="Why this escalated"
-              description="The system only escalates once the event chain creates enough deterministic evidence."
+              description="The system only escalates when the event chain becomes strong enough to justify an intervention."
             />
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-5 space-y-4">
               {timeline.map((item) => (
                 <TimelineItem
                   key={`${item.at}-${item.title}`}
@@ -370,25 +353,35 @@ export default async function Home() {
               ))}
             </div>
           </div>
+
+          <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+            <SectionHeader
+              eyebrow="Audit trail"
+              title="How the state changed"
+              description="The incident is compressed into one decision, but every escalation still keeps an operational trace."
+            />
+
+            <div className="mt-5 space-y-4">
+              {auditTrail.map((entry) => (
+                <TimelineItem
+                  key={entry.id}
+                  at={entry.at}
+                  title={entry.action}
+                  body={`${entry.actor} · ${entry.details}`}
+                />
+              ))}
+            </div>
+          </div>
         </section>
 
-        <section className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+        <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
           <SectionHeader
-            eyebrow="How the system knows"
+            eyebrow="Ingestion status"
             title="The incident stays simple. The evidence does not."
-            description="One operational decision sits on top of review state, deploy state, ownership gaps, and downstream delivery signals."
+            description="The console leads with one blocked release. Underneath, it keeps the source systems legible."
           />
 
-          <div className="mt-4 flex justify-start">
-            <Link
-              href="/ingestion-preview"
-              className="inline-flex rounded-full border border-black/8 px-3.5 py-2 text-xs font-medium uppercase tracking-[0.2em] text-[#6f645b] transition hover:border-black/15 hover:bg-black hover:text-white"
-            >
-              View ingestion preview
-            </Link>
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
             {sourceOverview.map((source) => (
               <CompactSourceCard
                 key={source.source}
@@ -491,60 +484,20 @@ function getSourceSubtitle(source: "github" | "vercel" | "linear") {
   return "delivery + ownership state";
 }
 
-function MetricCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent: string;
-}) {
-  return (
-    <div className="rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] px-4 py-5">
-      <p className="text-xs uppercase tracking-[0.22em] text-[#8f8378]">{label}</p>
-      <p className={`mt-3 text-3xl font-semibold ${accent}`}>{value}</p>
-    </div>
-  );
-}
-
-function SignalStep({
-  source,
-  title,
-  detail,
-  meta,
-  terminal = false,
-}: {
-  source: string;
-  title: string;
-  detail: string;
-  meta?: string;
-  terminal?: boolean;
-}) {
-  return (
-    <div className="relative rounded-[1.2rem] border border-black/6 bg-white p-4">
-      {!terminal ? (
-        <span className="absolute left-6 top-full h-4 w-px bg-black/10" />
-      ) : null}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs uppercase tracking-[0.22em] text-[#8f8378]">{source}</p>
-        {meta ? (
-          <span className="rounded-full bg-[#f7f7f4] px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8f8378]">
-            {meta}
-          </span>
-        ) : null}
-      </div>
-      <h3 className="mt-2 text-base font-semibold text-[#17120f]">{title}</h3>
-      <p className="mt-1 text-sm text-[#615850]">{detail}</p>
-    </div>
-  );
-}
-
 function CaseFact({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
       <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{label}</p>
       <p className="mt-2 text-sm font-medium text-[#2c241f]">{value}</p>
+    </div>
+  );
+}
+
+function CompactFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
+      <p className="text-xs uppercase tracking-[0.2em] text-[#8d8176]">{label}</p>
+      <p className="mt-2 text-lg font-semibold text-[#17120f]">{value}</p>
     </div>
   );
 }
