@@ -1,8 +1,6 @@
 import Link from "next/link";
 
 import {
-  getArtifactsBySource,
-  getAuditTrail,
   getDashboardSnapshot,
   getSourceOverview,
 } from "@/lib/control/engine";
@@ -18,11 +16,7 @@ const severityStyles = {
 export default async function Home() {
   const snapshot = await getDashboardSnapshot();
   const topAlert = snapshot.primaryAlert;
-  const [sourceOverview, artifactsBySource, auditTrail] = await Promise.all([
-    getSourceOverview(),
-    getArtifactsBySource(),
-    getAuditTrail(topAlert.id),
-  ]);
+  const sourceOverview = await getSourceOverview();
 
   const findArtifact = (id: string) =>
     topAlert.artifacts.find((artifact) => artifact.id === id);
@@ -32,78 +26,41 @@ export default async function Home() {
   const blockedDeploy = findArtifact("deploy-web-checkout");
   const blockedTicket = findArtifact("ticket-linear-142");
   const blockedFlag = findArtifact("flag-checkout-v2");
-  const githubEvidence = pickPrimarySourceArtifact(
-    artifactsBySource.github,
-    "github",
-    blockedPr,
-  );
-  const vercelEvidence = pickPrimarySourceArtifact(
-    artifactsBySource.vercel,
-    "vercel",
-    blockedDeploy,
-  );
-  const linearEvidence = pickPrimarySourceArtifact(
-    artifactsBySource.linear,
-    "linear",
-    blockedTicket,
-  );
 
   const releaseWindow = getStringMetadata(releaseTrain, "releaseWindow") ?? "today";
   const impactedUsers = getNumberMetadata(blockedDeploy, "impactedUsers");
   const openHours = getNumberMetadata(blockedPr, "openHours");
   const rolloutPercentage = getNumberMetadata(blockedFlag, "rolloutPercentage");
-  const downstreamBlockers = [blockedDeploy, blockedTicket, blockedFlag].filter(Boolean)
-    .length;
 
   const timeline = [
     {
-      at: githubEvidence?.updatedAt ?? "19h ago",
-      title:
-        githubEvidence && isLiveArtifact(githubEvidence) && isEscalationRelevantArtifact(githubEvidence)
-          ? "Live GitHub signal detected"
-          : "PR pending review",
+      at: blockedPr?.updatedAt ?? "19h ago",
+      title: "API review still waiting",
       body:
-        githubEvidence?.summary ?? "PR waiting on review; backend owner still missing.",
+        blockedPr?.summary ?? "The checkout API change still has no explicit backend owner.",
     },
     {
-      at:
-        vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
-          ? vercelEvidence.updatedAt
-          : blockedDeploy?.updatedAt ?? "4h ago",
-      title:
-        vercelEvidence && isLiveArtifact(vercelEvidence) && isEscalationRelevantArtifact(vercelEvidence)
-          ? "Live Vercel signal detected"
-          : "Deployment blocked",
+      at: blockedDeploy?.updatedAt ?? "4h ago",
+      title: "Production deploy stopped",
+      body: blockedDeploy?.summary ?? "The web-checkout deploy cannot continue.",
+    },
+    {
+      at: blockedTicket?.updatedAt ?? "2h ago",
+      title: "Customer release blocked",
       body:
-        (vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
-          ? vercelEvidence.summary
-          : blockedDeploy?.summary) ??
-        "Production deploy blocked by upstream dependency.",
-    },
-    {
-      at: linearEvidence?.updatedAt ?? "2h ago",
-      title: "Downstream ticket delayed",
-      body: linearEvidence?.summary ?? "Launch ticket blocked downstream.",
-    },
-    {
-      at: "12m ago",
-      title: "Escalation triggered",
-      body: "Escalated to release captain for immediate ownership decision.",
+        blockedTicket?.summary ??
+        "The customer-facing release is still waiting on the blocked deploy path.",
     },
   ];
 
   const criticalSignals = [
     blockedPr?.owner
-      ? `${blockedPr.owner} owns the upstream review path.`
-      : "Backend owner missing on API review.",
-    buildSignalSummary(
-      vercelEvidence && isEscalationRelevantArtifact(vercelEvidence)
-        ? vercelEvidence
-        : null,
-      "Frontend deploy blocked for 4h.",
-    ),
-    buildSignalSummary(linearEvidence, "Launch ticket blocked downstream."),
-    buildSignalSummary(blockedFlag, "Rollout gate still closed."),
+      ? `${blockedPr.owner} has not cleared the checkout API review yet.`
+      : "No backend owner is assigned to the blocked checkout API review.",
+    blockedDeploy?.summary ?? "The production deploy is blocked by the unresolved API dependency.",
+    blockedTicket?.summary ??
+      "A customer-facing release ticket is waiting on the blocked deploy path.",
+    blockedFlag?.summary ?? "checkout-v2 rollout stays stuck behind the deploy gate.",
   ];
 
   return (
@@ -126,8 +83,8 @@ export default async function Home() {
                 Checkout release blocked
               </h1>
               <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                Find what cannot ship, why it is blocked, who is missing, and what
-                the team should do next.
+                One release is blocked. This console shows the blocker, the missing
+                owner, and the next move.
               </p>
             </div>
 
@@ -141,10 +98,7 @@ export default async function Home() {
                 label="Upstream delay"
                 value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
               />
-              <CompactFact
-                label="Downstream blockers"
-                value={`${downstreamBlockers}`}
-              />
+              <CompactFact label="Rollout" value={`${rolloutPercentage ?? 0}%`} />
             </div>
           </div>
 
@@ -164,29 +118,32 @@ export default async function Home() {
           </div>
         </header>
 
-        <section className="grid items-start gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <section className="grid items-start gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Blocked release"
-              title="What cannot ship right now?"
+              title="What cannot ship?"
               description="checkout-v2 cannot ship because the checkout API review still blocks the deploy path."
             />
 
-            <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr] xl:grid-cols-1">
-              <FlowNode
+            <div className="mt-5 space-y-3">
+              <IncidentStep
                 tone="warning"
+                step="1"
                 title={blockedPr?.label ?? "checkout-api-contract"}
                 body={blockedPr?.summary ?? "Critical API change is still waiting on review."}
               />
               <FlowArrow label="blocks deploy" />
-              <FlowNode
+              <IncidentStep
                 tone="neutral"
+                step="2"
                 title={blockedDeploy?.label ?? "web-checkout-production"}
                 body={blockedDeploy?.summary ?? "Production deploy cannot continue."}
               />
               <FlowArrow label="delays launch" />
-              <FlowNode
+              <IncidentStep
                 tone="critical"
+                step="3"
                 title={blockedTicket?.label ?? "LIN-142 checkout banner release"}
                 body={blockedTicket?.summary ?? "Customer-facing work remains unresolved downstream."}
               />
@@ -226,42 +183,31 @@ export default async function Home() {
           <div className="space-y-6">
             <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
               <SectionHeader
-                eyebrow="Why blocked"
-                title="What caused the incident?"
+                eyebrow="Action required"
+                title="Who should act now?"
               />
 
-              <ul className="mt-5 space-y-3 text-sm leading-7 text-[#615850]">
-                {criticalSignals.map((signal) => (
-                  <li key={signal} className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
-                    <span>{signal}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              <div className="mt-5 rounded-[1.35rem] border border-amber-300/60 bg-[#fff8e8] p-4">
+                <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
+                  Next move
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[#4c4138]">
+                  Assign the backend owner now. If nobody can take it, remove
+                  checkout-v2 from today&apos;s release.
+                </p>
+              </div>
 
-            <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-              <SectionHeader
-                eyebrow="Owners"
-                title="Who needs to act?"
-              />
-
-              <div className="mt-5 space-y-3">
+              <div className="mt-4 space-y-3">
                 <OwnerRow
-                  label="Escalation owner"
+                  label="Release captain"
                   value={topAlert.owner ?? "Unassigned"}
-                  status="driving the decision"
+                  status="must own the decision now"
                 />
                 <OwnerRow
                   label="Backend owner"
                   value={blockedPr?.owner ?? "Missing owner"}
-                  status="missing on the blocked review"
+                  status="must clear the blocked API review"
                   critical
-                />
-                <OwnerRow
-                  label="Deploy owner"
-                  value={blockedDeploy?.owner ?? "Frontend"}
-                  status="waiting on API review"
                 />
               </div>
 
@@ -278,10 +224,29 @@ export default async function Home() {
                 />
               </div>
             </div>
+
+            <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
+              <SectionHeader
+                eyebrow="Why blocked"
+                title="Why did the system escalate this?"
+              />
+
+              <ul className="mt-5 space-y-3 text-sm leading-7 text-[#615850]">
+                {criticalSignals.map((signal) => (
+                  <li
+                    key={signal}
+                    className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3"
+                  >
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
+                    <span>{signal}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+        <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Incident history"
@@ -302,20 +267,24 @@ export default async function Home() {
 
           <div className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
-              eyebrow="5. System trace"
-              title="What did the system record?"
+              eyebrow="What the team should remember"
+              title="If nobody acts now"
             />
 
-            <div className="mt-5 space-y-4">
-              {auditTrail.map((entry) => (
-                <TimelineItem
-                  key={entry.id}
-                  at={formatTimeLabel(entry.at)}
-                  title={entry.action}
-                  body={formatAuditBody(entry)}
-                />
-              ))}
-            </div>
+            <ul className="mt-5 space-y-3 text-sm leading-7 text-[#615850]">
+              <li className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                <span>Production deploy stays blocked.</span>
+              </li>
+              <li className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                <span>Customer-facing release stays off today&apos;s train.</span>
+              </li>
+              <li className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                <span>checkout-v2 rollout remains stuck at {rolloutPercentage ?? 0}%.</span>
+              </li>
+            </ul>
           </div>
         </section>
 
@@ -325,19 +294,13 @@ export default async function Home() {
             title="Where is this evidence coming from?"
           />
 
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
             {sourceOverview.map((source) => (
-              <CompactSourceCard
+              <SourcePill
                 key={source.source}
                 title={getSourceTitle(source.source)}
-                subtitle={getSourceSubtitle(source.source)}
-                value={`${source.signals} signals · ${source.events} events · ${source.artifacts} artifacts`}
-                headline={getSourceEvidenceHeadline(
-                  source.source,
-                  githubEvidence,
-                  vercelEvidence,
-                  linearEvidence,
-                )}
+                mode={source.mode}
+                stats={`${source.signals} signals · ${source.events} events`}
               />
             ))}
           </div>
@@ -347,85 +310,10 @@ export default async function Home() {
   );
 }
 
-function isLiveArtifact(artifact: ControlArtifact) {
-  return artifact.id.startsWith("live-");
-}
-
-function isEscalationRelevantArtifact(artifact: ControlArtifact) {
-  return ["blocked", "failed", "waiting_review", "queued"].includes(artifact.status);
-}
-
-function getArtifactPriority(artifact: ControlArtifact) {
-  const statusScore = {
-    blocked: 5,
-    failed: 5,
-    waiting_review: 4,
-    queued: 3,
-    in_progress: 2,
-    healthy: 1,
-  }[artifact.status];
-
-  return statusScore + (artifact.owner ? 0 : 0.5);
-}
-
-function pickPrimarySourceArtifact(
-  artifacts: ControlArtifact[],
-  source: "github" | "vercel" | "linear",
-  fallback?: ControlArtifact,
-) {
-  const liveArtifacts = artifacts.filter(
-    (artifact) => artifact.source === source && isLiveArtifact(artifact),
-  );
-  const riskyLiveArtifacts = liveArtifacts.filter(isEscalationRelevantArtifact);
-  const candidates = (
-    riskyLiveArtifacts.length > 0
-      ? riskyLiveArtifacts
-      : liveArtifacts.length > 0
-        ? liveArtifacts
-        : artifacts
-  ).slice();
-
-  candidates.sort((left, right) => getArtifactPriority(right) - getArtifactPriority(left));
-
-  if (riskyLiveArtifacts.length === 0 && fallback) {
-    return fallback;
-  }
-
-  return candidates[0] ?? fallback ?? null;
-}
-
-function buildSignalSummary(
-  artifact: ControlArtifact | null | undefined,
-  fallback: string,
-) {
-  if (!artifact) {
-    return fallback;
-  }
-
-  return artifact.summary;
-}
-
-function getSourceEvidenceHeadline(
-  source: "github" | "vercel" | "linear",
-  githubEvidence: ControlArtifact | null,
-  vercelEvidence: ControlArtifact | null,
-  linearEvidence: ControlArtifact | null,
-) {
-  if (source === "github") return githubEvidence?.label ?? "No GitHub evidence";
-  if (source === "vercel") return vercelEvidence?.label ?? "No Vercel evidence";
-  return linearEvidence?.label ?? "No Linear evidence";
-}
-
 function getSourceTitle(source: "github" | "vercel" | "linear") {
   if (source === "github") return "GitHub";
   if (source === "vercel") return "Vercel";
   return "Linear";
-}
-
-function getSourceSubtitle(source: "github" | "vercel" | "linear") {
-  if (source === "github") return "review + merge state";
-  if (source === "vercel") return "deploy + rollout state";
-  return "delivery + ownership state";
 }
 
 function CaseFact({ label, value }: { label: string; value: string }) {
@@ -481,20 +369,6 @@ function formatTimeLabel(value: string) {
   return formatRelativeTime(parsed);
 }
 
-function formatAuditBody(entry: {
-  actor: string;
-  details: string;
-  beforeState?: string;
-  afterState?: string;
-}) {
-  const stateChange =
-    entry.beforeState && entry.afterState
-      ? ` (${entry.beforeState} → ${entry.afterState})`
-      : "";
-
-  return `${entry.actor} · ${entry.details}${stateChange}`;
-}
-
 function OwnerRow({
   label,
   value,
@@ -525,14 +399,16 @@ function OwnerRow({
   );
 }
 
-function FlowNode({
+function IncidentStep({
   title,
   body,
   tone,
+  step,
 }: {
   title: string;
   body: string;
   tone: "neutral" | "warning" | "critical";
+  step: string;
 }) {
   const toneClasses = {
     neutral: "border-black/6 bg-[#f7f7f4]",
@@ -542,6 +418,7 @@ function FlowNode({
 
   return (
     <div className={`rounded-[1.2rem] border p-4 ${toneClasses[tone]}`}>
+      <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">Step {step}</p>
       <h3 className="text-base font-semibold text-[#17120f]">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#615850]">{body}</p>
     </div>
@@ -576,23 +453,24 @@ function TimelineItem({
   );
 }
 
-function CompactSourceCard({
+function SourcePill({
   title,
-  subtitle,
-  value,
-  headline,
+  mode,
+  stats,
 }: {
   title: string;
-  subtitle: string;
-  value: string;
-  headline: string;
+  mode: string;
+  stats: string;
 }) {
   return (
     <div className="rounded-[1.25rem] border border-black/6 bg-[#f7f7f4] p-4">
-      <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{subtitle}</p>
-      <h3 className="mt-2 text-lg font-semibold text-[#17120f]">{title}</h3>
-      <p className="mt-2 text-sm font-medium text-[#2d241d]">{headline}</p>
-      <p className="mt-3 text-sm text-[#615850]">{value}</p>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold text-[#17120f]">{title}</h3>
+        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-[#7e746b]">
+          {mode}
+        </span>
+      </div>
+      <p className="mt-3 text-sm text-[#615850]">{stats}</p>
     </div>
   );
 }
