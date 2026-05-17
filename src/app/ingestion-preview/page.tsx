@@ -89,9 +89,9 @@ export default function IngestionPreviewPage() {
 
   return (
     <main className="min-h-screen bg-[#f3f0eb] text-[#151311]">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto flex w-full max-w-[1420px] flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
         <header className="rounded-[2.15rem] border border-black/6 bg-white px-8 py-7 shadow-[0_28px_80px_rgba(17,24,39,0.05)] sm:px-10 sm:py-8">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.46fr)_minmax(420px,.86fr)] xl:items-start">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.52fr)_minmax(420px,.82fr)] xl:items-start">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
@@ -106,11 +106,11 @@ export default function IngestionPreviewPage() {
               </div>
 
               <div className="space-y-4">
-                <h1 className="text-5xl font-semibold tracking-[-0.08em] text-[#17120f] sm:text-[4.65rem] sm:leading-[0.94] lg:text-[4.95rem]">
-                  <span className="block">Real events become</span>
+                <h1 className="text-5xl font-semibold tracking-[-0.08em] text-[#17120f] sm:text-[4.35rem] sm:leading-[0.94] lg:text-[4.55rem]">
+                  <span className="block xl:whitespace-nowrap">Real events become</span>
                   <span className="block">operational signals.</span>
                 </h1>
-                <p className="max-w-[34rem] text-lg leading-9 text-[#5f564e] sm:text-[1.22rem]">
+                <p className="max-w-[39rem] text-lg leading-9 text-[#5f564e] sm:text-[1.18rem]">
                   Control keeps the raw payload, extracts deterministic evidence,
                   and turns source events into incident-ready signals before AI
                   summarizes anything.
