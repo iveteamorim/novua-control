@@ -30,3 +30,51 @@ body {
   background: rgba(214, 134, 70, 0.24);
   color: #151311;
 }
+
+.live-dot,
+.live-dot-critical {
+  position: relative;
+}
+
+.live-dot {
+  background: #b36a18;
+}
+
+.live-dot-critical {
+  background: #e11d48;
+}
+
+.live-dot::after,
+.live-dot-critical::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  opacity: 0.3;
+  animation: novua-pulse 1.8s ease-out infinite;
+}
+
+.live-dot::after {
+  background: rgba(179, 106, 24, 0.28);
+}
+
+.live-dot-critical::after {
+  background: rgba(225, 29, 72, 0.22);
+}
+
+@keyframes novua-pulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.35;
+  }
+
+  70% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
