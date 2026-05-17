@@ -46,7 +46,7 @@ export default async function Home() {
   const liveSignalCount = sourceOverview.reduce((total, source) => total + source.signals, 0);
   const lastAuditEntries = auditTrail.slice(-3).reverse();
   const lastUpdated = lastAuditEntries[0]?.at ?? blockedDeploy?.updatedAt ?? blockedPr?.updatedAt;
-  const queueAlerts = snapshot.alerts.slice(0, 4);
+  const queueAlerts = snapshot.alerts.slice(0, 3);
 
   const queueOwnerGaps = snapshot.unownedArtifacts.length;
   const queueBlockedCount = snapshot.blockedArtifacts.length;
@@ -154,16 +154,16 @@ export default async function Home() {
           </div>
         </header>
 
-        <section className="rounded-[2rem] border border-black/8 bg-[#171413] p-6 text-white shadow-[0_24px_70px_rgba(17,24,39,0.18)]">
+        <section className="rounded-[2.05rem] border border-black/8 bg-[#171413] p-6 text-white shadow-[0_24px_70px_rgba(17,24,39,0.18)]">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <p className="text-xs font-medium uppercase tracking-[0.42em] text-[#e9b062]">
                 Open incident queue
               </p>
-              <h2 className="mt-4 text-[2.8rem] font-semibold leading-[1.02] tracking-[-0.05em] text-white">
+              <h2 className="mt-4 text-[2.7rem] font-semibold leading-[1.02] tracking-[-0.05em] text-white">
                 What else is under pressure?
               </h2>
-              <p className="mt-4 max-w-2xl text-xl leading-9 text-white/60">
+              <p className="mt-4 max-w-2xl text-[1.05rem] leading-8 text-white/58">
                 {queueBlockedCount} blocked artifacts are currently driving {snapshot.alerts.length} escalated incidents across the queue.
               </p>
             </div>
@@ -173,7 +173,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="mt-7 grid items-start gap-4 xl:grid-cols-4">
+          <div className="mt-7 grid items-start gap-4 xl:grid-cols-3">
             {queueAlerts.map((alert) => (
               <IncidentQueueCard
                 key={alert.id}
@@ -562,9 +562,9 @@ function IncidentQueueCard({
   return (
     <Link
       href={active ? "/" : `/alerts/${alert.id}`}
-      className={`block rounded-[1.5rem] border p-5 transition ${
+      className={`flex h-full flex-col rounded-[1.5rem] border p-5 transition ${
         active
-          ? "border-rose-400/55 bg-[linear-gradient(180deg,rgba(34,29,31,1),rgba(28,24,23,1))] shadow-[0_20px_42px_rgba(190,24,93,0.12)]"
+          ? "border-rose-400/55 bg-white/[0.05] shadow-[0_16px_32px_rgba(190,24,93,0.08)]"
           : "border-white/10 bg-white/[0.04] hover:border-white/16 hover:bg-white/[0.06]"
       }`}
     >
@@ -583,12 +583,12 @@ function IncidentQueueCard({
         </span>
       </div>
 
-      <h3 className="mt-6 text-[2rem] font-semibold leading-tight tracking-[-0.035em] text-white">
+      <h3 className="mt-6 text-[1.75rem] font-semibold leading-tight tracking-[-0.035em] text-white">
         {alert.title}
       </h3>
-      <p className="mt-4 min-h-[7.75rem] text-lg leading-9 text-white/58">{alert.summary}</p>
+      <p className="mt-4 min-h-[6.75rem] text-[1.02rem] leading-8 text-white/56">{alert.summary}</p>
 
-      <div className="mt-6 border-t border-white/10 pt-5">
+      <div className="mt-auto border-t border-white/10 pt-5">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.26em] text-white/28">Risk</p>
