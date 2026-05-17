@@ -118,7 +118,7 @@ export default function IngestionPreviewPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-[30rem] xl:self-start xl:justify-self-end">
+            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-[34rem] xl:self-start xl:justify-self-end">
               <HeroMetric label="Sources">
                 <span className="block">GitHub +</span>
                 <span className="block">Vercel</span>
@@ -346,7 +346,7 @@ function HeroMetric({
       className={`min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5 ${className}`}
     >
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <div className="mt-4 text-[clamp(1.35rem,1.45vw,2.1rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#17120f]">
+      <div className="mt-4 break-words text-[clamp(1.08rem,1.15vw,1.82rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#17120f]">
         {children}
       </div>
     </div>
