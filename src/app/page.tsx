@@ -48,15 +48,6 @@ export default async function Home() {
   const lastUpdated = lastAuditEntries[0]?.at ?? blockedDeploy?.updatedAt ?? blockedPr?.updatedAt;
   const queueAlerts = snapshot.alerts.slice(0, 4);
 
-  const criticalSignals = [
-    blockedPr?.owner
-      ? `${blockedPr.owner} has not cleared the checkout API review yet.`
-      : "No backend owner is assigned to the blocked checkout API review.",
-    blockedDeploy?.summary ?? "The production deploy is blocked by the unresolved API dependency.",
-    blockedTicket?.summary ??
-      "A customer-facing release ticket is waiting on the blocked deploy path.",
-    blockedFlag?.summary ?? "checkout-v2 rollout stays stuck behind the deploy gate.",
-  ];
   const queueOwnerGaps = snapshot.unownedArtifacts.length;
   const queueBlockedCount = snapshot.blockedArtifacts.length;
 
@@ -299,17 +290,37 @@ export default async function Home() {
               title="Why did the system escalate this?"
             />
 
-            <ul className="mt-5 grid gap-3">
-              {criticalSignals.map((signal) => (
-                <li
-                  key={signal}
-                  className="flex gap-3 rounded-[1rem] border border-black/6 bg-[#f7f7f4] px-4 py-3 text-sm leading-7 text-[#615850]"
-                >
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-600" />
-                  <span>{signal}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5 grid gap-4">
+              <ReasonRow
+                icon="owner"
+                text={
+                  blockedPr?.owner
+                    ? `${blockedPr.owner} has not cleared the blocked checkout API review yet.`
+                    : "No backend owner is assigned to the blocked checkout API review."
+                }
+              />
+              <ReasonRow
+                icon="dependency"
+                text={
+                  blockedDeploy?.summary ??
+                  "Production deploy is blocked by an unresolved API dependency."
+                }
+              />
+              <ReasonRow
+                icon="alert"
+                text={
+                  blockedTicket?.summary ??
+                  "Customer-facing release remains blocked because frontend deploy cannot ship."
+                }
+              />
+              <ReasonRow
+                icon="pulse"
+                text={
+                  blockedFlag?.summary ??
+                  "Rollout flag is queued behind the deployment gate for checkout v2."
+                }
+              />
+            </div>
           </section>
 
           <section className="rounded-[1.8rem] border border-black/6 bg-[#fbfaf8] p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)] xl:col-span-5">
@@ -670,6 +681,100 @@ function FlowArrow({ label }: { label: string }) {
     <div className="pl-4 text-xs uppercase tracking-[0.24em] text-[#93867b]">
       {label}
     </div>
+  );
+}
+
+function ReasonRow({
+  icon,
+  text,
+}: {
+  icon: "owner" | "dependency" | "alert" | "pulse";
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-5 rounded-[1.25rem] border border-black/6 bg-[#f8f7f4] px-5 py-5 text-[#4f463f] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#fff0db] text-[#f06f1c]">
+        <ReasonIcon kind={icon} />
+      </span>
+      <p className="text-[1.05rem] leading-8">{text}</p>
+    </div>
+  );
+}
+
+function ReasonIcon({ kind }: { kind: "owner" | "dependency" | "alert" | "pulse" }) {
+  if (kind === "owner") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 14a4 4 0 1 0-4-4" />
+        <path d="M12 14c2.6 0 4.8 1.2 6 3" />
+        <path d="M5 19l2.5-2.5" />
+        <path d="M5 16.5V19h2.5" />
+      </svg>
+    );
+  }
+
+  if (kind === "dependency") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="7" cy="7" r="2.5" />
+        <circle cx="17" cy="12" r="2.5" />
+        <circle cx="7" cy="17" r="2.5" />
+        <path d="M9.3 8.3l5.1 2.4" />
+        <path d="M9.3 15.7l5.1-2.4" />
+      </svg>
+    );
+  }
+
+  if (kind === "alert") {
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 4l8 14H4L12 4z" />
+        <path d="M12 9v4" />
+        <path d="M12 16h.01" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 12h4l2-5 4 10 2-5h4" />
+    </svg>
   );
 }
 
