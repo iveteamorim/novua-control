@@ -91,7 +91,7 @@ export default function IngestionPreviewPage() {
     <main className="min-h-screen bg-[#f3f0eb] text-[#151311]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
         <header className="rounded-[2.15rem] border border-black/6 bg-white p-8 shadow-[0_28px_80px_rgba(17,24,39,0.05)] sm:p-10">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,.9fr)] xl:items-end">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(360px,.88fr)] xl:items-start">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
@@ -117,14 +117,14 @@ export default function IngestionPreviewPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-md xl:grid-cols-2 xl:justify-self-end">
               <HeroMetric label="Sources" value="GitHub / Vercel" />
+              <HeroMetric label="Model" value="Deterministic first" />
               <HeroMetric
                 label="Output"
                 value="Artifacts / Events / Signals"
-                className="xl:col-span-2 2xl:col-span-1"
+                className="xl:col-span-2"
               />
-              <HeroMetric label="Model" value="Deterministic first" />
             </div>
           </div>
         </header>
