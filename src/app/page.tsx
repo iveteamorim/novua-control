@@ -242,38 +242,38 @@ export default async function Home() {
             </div>
           </section>
 
-          <section className="rounded-[1.8rem] border border-amber-300/45 bg-[linear-gradient(180deg,rgba(255,250,239,0.96),rgba(255,255,255,1)_28%)] p-5 shadow-[0_20px_56px_rgba(120,84,28,0.08)] xl:col-span-5">
+          <section className="rounded-[1.95rem] border border-amber-300/55 bg-[linear-gradient(180deg,rgba(255,251,241,0.98),rgba(255,255,255,1)_30%)] p-6 shadow-[0_22px_60px_rgba(120,84,28,0.08)] xl:col-span-5">
             <SectionHeader eyebrow="Action required" title="Who should act now?" />
 
-            <div className="mt-5 rounded-[1.35rem] border border-amber-300/80 bg-[#fff1ca] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
-              <p className="text-xs uppercase tracking-[0.22em] text-amber-700/82">
+            <div className="mt-6 rounded-[1.5rem] border border-amber-300/85 bg-[#fff6df] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+              <p className="text-xs uppercase tracking-[0.28em] text-orange-600">
                 Next move
               </p>
-              <p className="mt-3 text-sm leading-7 text-[#4c4138]">
+              <p className="mt-4 text-lg leading-8 text-[#4c4138]">
                 Assign the backend owner now. If nobody can take it, remove
                 checkout-v2 from today&apos;s release.
               </p>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               <form action={assignBackendOwnerAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
+                <button className="inline-flex rounded-full border border-black/8 bg-black px-5 py-3 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
                   Assign backend owner
                 </button>
               </form>
               <form action={startMitigationAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
+                <button className="inline-flex rounded-full border border-black/8 bg-white px-5 py-3 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
                   Start mitigation
                 </button>
               </form>
               <form action={resolveIncidentAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
+                <button className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
                   Resolve incident
                 </button>
               </form>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-6 space-y-4">
               <OwnerRow
                 label="Release captain"
                 value={topAlert.owner ?? "Unassigned"}
@@ -289,19 +289,6 @@ export default async function Home() {
                 label="Deploy owner"
                 value={blockedDeploy?.owner ?? "Frontend"}
                 status="waiting on the API review to unblock shipping"
-              />
-            </div>
-
-            <div className="mt-4 grid items-start gap-3 sm:grid-cols-2">
-              <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
-              <CaseFact label="Current state" value={topAlert.state} />
-              <CaseFact
-                label="Time blocked"
-                value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
-              />
-              <CaseFact
-                label="Users affected"
-                value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
               />
             </div>
           </section>
@@ -402,15 +389,6 @@ function getSourceDetail(source: SourceOverview, alerts: DecisionAlert[]) {
   const blockedTickets = artifacts.filter((artifact) => artifact.type === "ticket" && artifact.status === "blocked").length;
   const missingOwners = artifacts.filter((artifact) => artifact.owner === null).length;
   return `${blockedTickets} blocked ticket${blockedTickets === 1 ? "" : "s"} · ${missingOwners} missing owner${missingOwners === 1 ? "" : "s"}`;
-}
-
-function CaseFact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[1rem] border border-black/6 bg-white px-4 py-3">
-      <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{label}</p>
-      <p className="mt-2 text-sm font-medium text-[#2c241f]">{value}</p>
-    </div>
-  );
 }
 
 function CompactFact({
@@ -633,16 +611,20 @@ function OwnerRow({
     <div
       className={`rounded-[1.2rem] border px-4 py-4 ${
         critical
-          ? "border-amber-300/70 bg-[#fff8e8]"
-          : "border-black/6 bg-[#f7f7f4]"
+          ? "border-amber-300/80 bg-white"
+          : "border-black/6 bg-white/82"
       }`}
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">{label}</p>
-          <p className="mt-2 text-base font-semibold text-[#17120f]">{value}</p>
+          <p className="mt-2 text-[1.85rem] font-semibold leading-none tracking-[-0.035em] text-[#17120f]">
+            {value}
+          </p>
         </div>
-        <p className="max-w-[11rem] text-right text-sm text-[#615850]">{status}</p>
+        <p className="max-w-[13rem] text-sm leading-7 text-[#615850] md:text-right">
+          {status}
+        </p>
       </div>
     </div>
   );
