@@ -101,7 +101,7 @@ export type AlertSeed = {
 };
 
 export type DecisionAlert = AlertSeed & {
-  severity: "critical" | "high" | "medium";
+  severity: "critical" | "high" | "medium" | "watch";
   riskScore: number;
   artifacts: ControlArtifact[];
   rules: RuleEvaluation[];

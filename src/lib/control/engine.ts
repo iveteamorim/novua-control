@@ -19,11 +19,15 @@ function getSeverity(score: number): DecisionAlert["severity"] {
     return "critical";
   }
 
-  if (score >= 50) {
+  if (score >= 65) {
     return "high";
   }
 
-  return "medium";
+  if (score >= 50) {
+    return "medium";
+  }
+
+  return "watch";
 }
 
 async function hydrateAlert(

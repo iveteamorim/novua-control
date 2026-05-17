@@ -131,6 +131,22 @@ export const controlDataset: ControlDataset = {
         releaseWindow: "today",
       },
     },
+    {
+      id: "flag-checkout-v2-rollback",
+      label: "checkout-v2 rollback candidate",
+      type: "feature_flag",
+      source: "vercel",
+      service: "web-checkout",
+      owner: "Release Captain",
+      status: "queued",
+      updatedAt: "6h ago",
+      summary:
+        "Release rollback candidate exists but still requires release captain approval before execution.",
+      metadata: {
+        openHours: 6,
+        rollbackCandidate: true,
+      },
+    },
   ],
   dependencies: [
     {
@@ -228,6 +244,15 @@ export const controlDataset: ControlDataset = {
       summary: "Refund queue incident opened without explicit owner.",
       actor: "Linear",
     },
+    {
+      id: "evt-8",
+      source: "vercel",
+      artifactId: "flag-checkout-v2-rollback",
+      kind: "rollback_pending",
+      at: "6h ago",
+      summary: "Rollback candidate is available but still waiting on release approval.",
+      actor: "Novua Control",
+    },
   ],
   signals: [],
   policyRules: [
@@ -267,6 +292,13 @@ export const controlDataset: ControlDataset = {
         "Failed canary deploys indicate unresolved platform risk before production rollout.",
     },
     {
+      id: "rule-refund-latency-persisting",
+      title: "Refund latency still rising",
+      points: 10,
+      description:
+        "Persistent refund queue latency should stay visible until the owner and mitigation path are clear.",
+    },
+    {
       id: "rule-release-train-dependency",
       title: "Release train dependency chain blocked",
       points: 22,
@@ -279,6 +311,20 @@ export const controlDataset: ControlDataset = {
       points: 14,
       description:
         "Critical release paths should always have an explicit fallback owner when the primary reviewer is missing.",
+    },
+    {
+      id: "rule-rollback-candidate-ready",
+      title: "Rollback candidate available",
+      points: 20,
+      description:
+        "When a safe rollback candidate exists, the system should keep it visible as a mitigation path.",
+    },
+    {
+      id: "rule-rollback-approval-pending",
+      title: "Rollback approval pending",
+      points: 22,
+      description:
+        "Rollback options that still require captain approval should remain visible in the queue until a decision is made.",
     },
   ],
   alertSeeds: [
@@ -324,6 +370,22 @@ export const controlDataset: ControlDataset = {
       triggeredRuleIds: [
         "rule-failed-canary",
         "rule-missing-owner",
+        "rule-refund-latency-persisting",
+      ],
+    },
+    {
+      id: "alert-rollback-pending",
+      title: "Rollback approval pending",
+      summary:
+        "Release rollback candidate exists but still requires release captain approval before execution.",
+      recommendedAction:
+        "Approve the rollback candidate now or explicitly keep checkout-v2 on the release path with named ownership.",
+      owner: "Release Captain",
+      artifactIds: ["flag-checkout-v2-rollback"],
+      state: "assigned",
+      triggeredRuleIds: [
+        "rule-rollback-candidate-ready",
+        "rule-rollback-approval-pending",
       ],
     },
   ],
@@ -390,6 +452,24 @@ export const controlDataset: ControlDataset = {
       action: "Suggested mitigation",
       details:
         "Recommended assigning platform ownership before the next worker rollout proceeds.",
+    },
+    {
+      id: "audit-8",
+      alertId: "alert-rollback-pending",
+      at: "6h ago",
+      actor: "Novua Control",
+      action: "Rollback candidate detected",
+      details:
+        "Rollback candidate was marked available, but release captain approval is still pending.",
+    },
+    {
+      id: "audit-9",
+      alertId: "alert-rollback-pending",
+      at: "2h ago",
+      actor: "Policy Engine",
+      action: "Rollback left pending",
+      details:
+        "The rollback path remained queued without an explicit approval decision.",
     },
   ],
 };

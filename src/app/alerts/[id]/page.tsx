@@ -17,6 +17,7 @@ const severityStyles = {
   critical: "border-rose-300 bg-rose-50 text-rose-700",
   high: "border-amber-300 bg-amber-50 text-amber-700",
   medium: "border-stone-300 bg-stone-100 text-stone-700",
+  watch: "border-stone-300 bg-stone-100 text-stone-700",
 };
 
 export default async function AlertDetailPage({
