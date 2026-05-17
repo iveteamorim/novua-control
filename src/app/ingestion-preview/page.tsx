@@ -91,7 +91,7 @@ export default function IngestionPreviewPage() {
     <main className="min-h-screen bg-[#f3f0eb] text-[#151311]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
         <header className="rounded-[2.15rem] border border-black/6 bg-white px-8 py-7 shadow-[0_28px_80px_rgba(17,24,39,0.05)] sm:px-10 sm:py-8">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.42fr)_minmax(360px,.82fr)] xl:items-start">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.46fr)_minmax(420px,.86fr)] xl:items-start">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
@@ -118,14 +118,20 @@ export default function IngestionPreviewPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-md xl:grid-cols-2 xl:self-start xl:justify-self-end">
-              <HeroMetric label="Sources" value="GitHub / Vercel" />
-              <HeroMetric label="Model" value="Deterministic first" />
-              <HeroMetric
-                label="Output"
-                value="Artifacts / Events / Signals"
-                className="xl:col-span-2"
-              />
+            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-[30rem] xl:self-start xl:justify-self-end">
+              <HeroMetric label="Sources">
+                <span className="block">GitHub +</span>
+                <span className="block">Vercel</span>
+              </HeroMetric>
+              <HeroMetric label="Output">
+                <span className="block">Artifacts ·</span>
+                <span className="block">Events ·</span>
+                <span className="block">Signals</span>
+              </HeroMetric>
+              <HeroMetric label="Model">
+                <span className="block">Deterministic</span>
+                <span className="block">first</span>
+              </HeroMetric>
             </div>
           </div>
         </header>
@@ -328,21 +334,21 @@ function PipelineCard({ source }: { source: PreviewSource }) {
 
 function HeroMetric({
   label,
-  value,
   className = "",
+  children,
 }: {
   label: string;
-  value: string;
   className?: string;
+  children: React.ReactNode;
 }) {
   return (
     <div
       className={`min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5 ${className}`}
     >
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <p className="mt-3 text-[clamp(1.9rem,1.85vw,2.55rem)] font-semibold leading-[1.12] tracking-[-0.05em] text-[#17120f]">
-        {value}
-      </p>
+      <div className="mt-4 text-[clamp(1.35rem,1.45vw,2.1rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#17120f]">
+        {children}
+      </div>
     </div>
   );
 }
