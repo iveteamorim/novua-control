@@ -91,7 +91,7 @@ export default function IngestionPreviewPage() {
     <main className="min-h-screen bg-[#f3f0eb] text-[#151311]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
         <header className="rounded-[2.15rem] border border-black/6 bg-white p-8 shadow-[0_28px_80px_rgba(17,24,39,0.05)] sm:p-10">
-          <div className="grid gap-8 xl:grid-cols-[1.45fr_.85fr] xl:items-end">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,.9fr)] xl:items-end">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
@@ -117,9 +117,13 @@ export default function IngestionPreviewPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-3">
-              <HeroMetric label="Sources" value="GitHub + Vercel" />
-              <HeroMetric label="Output" value="Artifacts · Events · Signals" />
+            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3">
+              <HeroMetric label="Sources" value="GitHub / Vercel" />
+              <HeroMetric
+                label="Output"
+                value="Artifacts / Events / Signals"
+                className="xl:col-span-2 2xl:col-span-1"
+              />
               <HeroMetric label="Model" value="Deterministic first" />
             </div>
           </div>
@@ -321,11 +325,21 @@ function PipelineCard({ source }: { source: PreviewSource }) {
   );
 }
 
-function HeroMetric({ label, value }: { label: string; value: string }) {
+function HeroMetric({
+  label,
+  value,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className="rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-6">
+    <div
+      className={`min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-6 ${className}`}
+    >
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <p className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-[#17120f]">
+      <p className="mt-4 text-[clamp(2rem,2.4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#17120f]">
         {value}
       </p>
     </div>
@@ -399,11 +413,11 @@ function EvidenceColumn({
       <h3 className="text-2xl font-semibold tracking-[-0.04em] text-[#17120f]">
         {title}
       </h3>
-      <div className="mt-6 grid gap-3">
+      <div className="mt-6 grid gap-3 min-w-0">
         {items.map((item) => (
           <div
             key={`${title}-${item}`}
-            className="rounded-[1rem] border border-black/6 bg-white px-5 py-4 font-mono text-sm text-[#534840]"
+            className="min-w-0 rounded-[1rem] border border-black/6 bg-white px-5 py-4 font-mono text-sm leading-6 text-[#534840] break-all"
           >
             {item}
           </div>
