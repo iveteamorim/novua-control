@@ -132,42 +132,44 @@ function PreviewPanel({
         <CountCard label="Signals" value={String(preview.signals.length)} />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="space-y-4">
-          <div className="rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
-              What came in
-            </p>
-            <p className="mt-3 text-sm leading-7 text-[#615850]">
-              The raw webhook arrives first. Control keeps the original payload,
-              but only a small subset becomes structured operational evidence.
-            </p>
-          </div>
-          <OutputBlock
-            title="Artifact"
-            items={preview.artifacts.map((artifact) => ({
-              title: artifact.label,
-              detail: `${artifact.status} · ${artifact.summary}`,
-            }))}
-          />
-        </div>
+      <div className="mt-6 rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
+        <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
+          What came in
+        </p>
+        <p className="mt-3 text-sm leading-7 text-[#615850]">
+          The raw webhook arrives first. Control keeps the original payload,
+          but only a small subset becomes structured operational evidence.
+        </p>
+      </div>
 
-        <div className="space-y-4">
-          <OutputBlock
-            title="Events extracted"
-            items={preview.events.map((event) => ({
-              title: event.kind,
-              detail: event.summary,
-            }))}
-          />
-          <OutputBlock
-            title="Signals generated"
-            items={preview.signals.map((signal) => ({
-              title: signal.kind,
-              detail: signal.summary,
-            }))}
-          />
-        </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <OutputBlock
+          title="Artifact"
+          items={preview.artifacts.map((artifact) => ({
+            title: artifact.label,
+            detail: `${artifact.status} · ${artifact.summary}`,
+          }))}
+        />
+        <SignalPathCard
+          eventType={eventType}
+          artifactCount={preview.artifacts.length}
+          eventCount={preview.events.length}
+          signalCount={preview.signals.length}
+        />
+        <OutputBlock
+          title="Events extracted"
+          items={preview.events.map((event) => ({
+            title: event.kind,
+            detail: event.summary,
+          }))}
+        />
+        <OutputBlock
+          title="Signals generated"
+          items={preview.signals.map((signal) => ({
+            title: signal.kind,
+            detail: signal.summary,
+          }))}
+        />
       </div>
 
       <details className="mt-4 rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
@@ -200,6 +202,53 @@ function OutputBlock({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function SignalPathCard({
+  eventType,
+  artifactCount,
+  eventCount,
+  signalCount,
+}: {
+  eventType: string;
+  artifactCount: number;
+  eventCount: number;
+  signalCount: number;
+}) {
+  return (
+    <div className="rounded-[1.4rem] border border-black/6 bg-[#f7f7f4] p-4">
+      <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
+        Signal path
+      </p>
+      <div className="mt-3 space-y-2">
+        <PathStep
+          title="Incoming event"
+          detail={`${eventType} arrives from the source system.`}
+        />
+        <PathStep
+          title="Artifact created"
+          detail={`${artifactCount} artifact${artifactCount === 1 ? "" : "s"} linked to the operational object.`}
+        />
+        <PathStep
+          title="Events extracted"
+          detail={`${eventCount} normalized event${eventCount === 1 ? "" : "s"} captured for audit and policy logic.`}
+        />
+        <PathStep
+          title="Signals generated"
+          detail={`${signalCount} release signal${signalCount === 1 ? "" : "s"} ready for escalation logic.`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function PathStep({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="rounded-[1rem] border border-black/6 bg-white p-3">
+      <p className="text-sm font-semibold text-[#17120f]">{title}</p>
+      <p className="mt-1 text-sm leading-6 text-[#615850]">{detail}</p>
     </div>
   );
 }
