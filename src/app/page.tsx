@@ -63,33 +63,33 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#f6f3ee] text-[#151311]">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="overflow-hidden rounded-[2rem] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,248,244,0.95),rgba(255,255,255,1)_44%)] shadow-[0_24px_80px_rgba(17,24,39,0.05)]">
-          <div className="grid items-start xl:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="px-5 py-6 sm:px-6 sm:py-7 xl:px-8 xl:py-8">
-              <div className="space-y-4">
+        <header className="overflow-hidden rounded-[2.2rem] border border-rose-200/80 bg-[linear-gradient(135deg,rgba(255,249,245,0.98),rgba(255,255,255,1)_42%)] shadow-[0_30px_90px_rgba(17,24,39,0.05)]">
+          <div className="grid items-start xl:grid-cols-[minmax(0,1fr)_392px]">
+            <div className="px-6 py-7 sm:px-7 sm:py-8 xl:px-10 xl:py-10">
+              <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full border border-black/8 bg-white px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#7e746b]">
+                  <span className="rounded-full border border-black/8 bg-white px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.28em] text-[#7e746b]">
                     Novua Control
                   </span>
                   <span
-                    className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] ${severityStyles[topAlert.severity]}`}
+                    className={`inline-flex rounded-full border px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.28em] ${severityStyles[topAlert.severity]}`}
                   >
                     {topAlert.severity} incident
                   </span>
                 </div>
 
-                <h1 className="max-w-4xl text-5xl font-semibold leading-[0.94] tracking-[-0.04em] text-[#17120f] sm:text-[5.3rem]">
+                <h1 className="max-w-4xl text-5xl font-semibold leading-[0.9] tracking-[-0.055em] text-[#17120f] sm:text-[5.75rem]">
                   Checkout release
                   <br />
                   blocked
                 </h1>
 
-                <p className="max-w-3xl text-base leading-8 text-[#5f564e] sm:text-lg">
+                <p className="max-w-3xl text-lg leading-9 text-[#5f564e]">
                   Checkout cannot ship until a backend owner clears the blocked API
                   review or the team removes checkout-v2 from today&apos;s release.
                 </p>
 
-                <div className="flex flex-wrap gap-3 pt-1">
+                <div className="flex max-w-3xl flex-wrap gap-3 pt-1">
                   <LiveStripPill
                     tone="critical"
                     label="live incident"
@@ -109,16 +109,16 @@ export default async function Home() {
                   ) : null}
                 </div>
 
-                <div className="flex flex-wrap gap-3 pt-2">
+                <div className="flex flex-wrap gap-3 pt-3">
                   <Link
                     href={`/alerts/${topAlert.id}`}
-                    className="inline-flex rounded-full border border-black/8 bg-black px-5 py-3 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
+                    className="inline-flex rounded-full border border-black/8 bg-black px-6 py-3.5 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
                   >
                     Open incident trace
                   </Link>
                   <Link
                     href="/ingestion-preview"
-                    className="inline-flex rounded-full border border-black/8 bg-white px-5 py-3 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+                    className="inline-flex rounded-full border border-black/8 bg-white px-6 py-3.5 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
                   >
                     View raw signals
                   </Link>
@@ -126,24 +126,24 @@ export default async function Home() {
               </div>
             </div>
 
-            <aside className="border-t border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,247,244,0.92))] px-5 py-6 sm:px-6 sm:py-7 xl:border-l xl:border-t-0 xl:px-6 xl:py-8">
-              <div className="rounded-[1.45rem] border border-rose-300/70 bg-white p-4 shadow-[0_10px_30px_rgba(225,29,72,0.06)]">
+            <aside className="border-t border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,247,244,0.92))] px-6 py-7 sm:px-7 sm:py-8 xl:border-l xl:border-t-0 xl:px-8 xl:py-10">
+              <div className="rounded-[1.55rem] border border-rose-300/80 bg-white p-5 shadow-[0_14px_36px_rgba(225,29,72,0.07)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
                       Risk score
                     </p>
-                    <p className="mt-3 text-6xl font-semibold leading-none tracking-[-0.04em] text-[#17120f]">
+                    <p className="mt-3 text-7xl font-semibold leading-none tracking-[-0.055em] text-[#17120f]">
                       {topAlert.riskScore}
                     </p>
                   </div>
-                  <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
-                    severe
-                  </span>
+                  <div className="grid h-14 w-14 place-items-center rounded-full border border-rose-200 bg-rose-50 text-rose-500">
+                    <RiskShieldIcon />
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-2">
+              <div className="mt-4 grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-2">
                 <CompactFact label="Release window" value={releaseWindow} />
                 <CompactFact
                   label="Users affected"
@@ -424,7 +424,7 @@ function CompactFact({
 }) {
   return (
     <div
-      className={`rounded-[1rem] border px-4 py-3 ${
+      className={`rounded-[1.25rem] border px-5 py-4 ${
         critical
           ? "border-rose-300/70 bg-rose-50 text-rose-700"
           : "border-black/6 bg-white"
@@ -437,7 +437,9 @@ function CompactFact({
       >
         {label}
       </p>
-      <p className="mt-2 text-lg font-semibold text-[#17120f]">{value}</p>
+      <p className="mt-3 text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#17120f]">
+        {value}
+      </p>
     </div>
   );
 }
@@ -467,6 +469,25 @@ function LiveStripPill({
       <span className="uppercase tracking-[0.18em]">{label}</span>
       <span className="normal-case tracking-normal text-[#17120f]">{value}</span>
     </div>
+  );
+}
+
+function RiskShieldIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-7 w-7"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3l6 2.8v5.9c0 4.1-2.5 7.9-6 9.3-3.5-1.4-6-5.2-6-9.3V5.8L12 3z" />
+      <path d="M12 8v5" />
+      <path d="M12 16h.01" />
+    </svg>
   );
 }
 
