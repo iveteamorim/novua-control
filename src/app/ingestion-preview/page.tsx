@@ -118,7 +118,7 @@ export default function IngestionPreviewPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-[34rem] xl:self-start xl:justify-self-end">
+            <div className="grid gap-3 sm:grid-cols-3 xl:max-w-[32.5rem] xl:self-start xl:justify-self-end">
               <HeroMetric label="Sources">
                 <span className="block">GitHub +</span>
                 <span className="block">Vercel</span>
@@ -334,19 +334,15 @@ function PipelineCard({ source }: { source: PreviewSource }) {
 
 function HeroMetric({
   label,
-  className = "",
   children,
 }: {
   label: string;
-  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5 ${className}`}
-    >
+    <div className="min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5">
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <div className="mt-4 break-words text-[clamp(1.08rem,1.15vw,1.82rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#17120f]">
+      <div className="mt-4 break-words text-[clamp(0.95rem,0.92vw,1.36rem)] font-semibold leading-[1.1] tracking-[-0.04em] text-[#17120f]">
         {children}
       </div>
     </div>
