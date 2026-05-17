@@ -154,20 +154,26 @@ export default async function Home() {
           </div>
         </header>
 
-        <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeader
-              eyebrow="Open incident queue"
-              title="What else is under pressure?"
-              description={`${queueBlockedCount} blocked artifacts are currently driving ${snapshot.alerts.length} escalated incidents across the queue.`}
-            />
-            <div className="flex flex-wrap gap-2">
+        <section className="rounded-[2rem] border border-black/8 bg-[#171413] p-6 text-white shadow-[0_24px_70px_rgba(17,24,39,0.18)]">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-xs font-medium uppercase tracking-[0.42em] text-[#e9b062]">
+                Open incident queue
+              </p>
+              <h2 className="mt-4 text-[2.8rem] font-semibold leading-[1.02] tracking-[-0.05em] text-white">
+                What else is under pressure?
+              </h2>
+              <p className="mt-4 max-w-2xl text-xl leading-9 text-white/60">
+                {queueBlockedCount} blocked artifacts are currently driving {snapshot.alerts.length} escalated incidents across the queue.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
               <QueueChip label="owner gaps" value={`${queueOwnerGaps}`} critical={queueOwnerGaps > 0} />
               <QueueChip label="services at risk" value={`${snapshot.servicesAtRisk.length}`} />
             </div>
           </div>
 
-          <div className="mt-5 grid items-start gap-3 xl:grid-cols-4">
+          <div className="mt-7 grid items-start gap-4 xl:grid-cols-4">
             {queueAlerts.map((alert) => (
               <IncidentQueueCard
                 key={alert.id}
@@ -528,14 +534,14 @@ function QueueChip({
 }) {
   return (
     <div
-      className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+      className={`rounded-full border px-4 py-2 text-xs font-medium ${
         critical
-          ? "border-rose-300/70 bg-rose-50 text-rose-700"
-          : "border-black/8 bg-[#f7f7f4] text-[#5f564e]"
+          ? "border-rose-400/55 bg-rose-500/10 text-rose-100"
+          : "border-white/12 bg-white/5 text-white/74"
       }`}
     >
-      <span className="uppercase tracking-[0.18em]">{label}</span>
-      <span className="ml-2 text-[#17120f]">{value}</span>
+      <span className="uppercase tracking-[0.22em]">{label}</span>
+      <span className={`ml-2 ${critical ? "text-white" : "text-white/92"}`}>{value}</span>
     </div>
   );
 }
@@ -556,54 +562,46 @@ function IncidentQueueCard({
   return (
     <Link
       href={active ? "/" : `/alerts/${alert.id}`}
-      className={`block rounded-[1.35rem] border p-4 transition ${
+      className={`block rounded-[1.5rem] border p-5 transition ${
         active
-          ? "border-rose-300/70 bg-[linear-gradient(180deg,rgba(255,248,244,0.96),rgba(255,255,255,1))] shadow-[0_18px_42px_rgba(190,24,93,0.08)]"
-          : "border-black/6 bg-[#f7f7f4] hover:border-black/10 hover:bg-white"
+          ? "border-rose-400/55 bg-[linear-gradient(180deg,rgba(34,29,31,1),rgba(28,24,23,1))] shadow-[0_20px_42px_rgba(190,24,93,0.12)]"
+          : "border-white/10 bg-white/[0.04] hover:border-white/16 hover:bg-white/[0.06]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <span
-          className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.22em] ${severityStyles[alert.severity]}`}
+          className={`inline-flex rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.24em] ${
+            alert.severity === "critical"
+              ? "border-rose-400/65 text-rose-200"
+              : "border-white/18 text-white/72"
+          }`}
         >
           {alert.severity}
         </span>
-        <span className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
+        <span className="text-xs uppercase tracking-[0.22em] text-white/36">
           {aging ? `${aging}h aging` : alert.state}
         </span>
       </div>
 
-      <h3 className="mt-3 text-lg font-semibold leading-tight text-[#17120f]">
+      <h3 className="mt-6 text-[2rem] font-semibold leading-tight tracking-[-0.035em] text-white">
         {alert.title}
       </h3>
-      <p className="mt-2 text-sm leading-6 text-[#615850]">{alert.summary}</p>
+      <p className="mt-4 min-h-[7.75rem] text-lg leading-9 text-white/58">{alert.summary}</p>
 
-      <div className="mt-4 grid items-start grid-cols-2 gap-3">
-        <QueueMetric label="owner" value={alert.owner ?? "Unassigned"} critical={!alert.owner} />
-        <QueueMetric label="state" value={alert.state} />
-        <QueueMetric label="blocked" value={`${blockedNodes}`} />
-        <QueueMetric label="gaps" value={`${missingOwners}`} critical={missingOwners > 0} />
+      <div className="mt-6 border-t border-white/10 pt-5">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.26em] text-white/28">Risk</p>
+            <p className="mt-3 text-sm text-white/46">
+              {missingOwners} owner gap{missingOwners === 1 ? "" : "s"} · {blockedNodes} blocked node{blockedNodes === 1 ? "" : "s"}
+            </p>
+          </div>
+          <p className="text-[3rem] font-semibold leading-none tracking-[-0.05em] text-white">
+            {alert.riskScore}
+          </p>
+        </div>
       </div>
     </Link>
-  );
-}
-
-function QueueMetric({
-  label,
-  value,
-  critical = false,
-}: {
-  label: string;
-  value: string;
-  critical?: boolean;
-}) {
-  return (
-    <div className="rounded-[0.95rem] border border-black/6 bg-white px-3 py-2.5">
-      <p className="text-[10px] uppercase tracking-[0.2em] text-[#93867b]">{label}</p>
-      <p className={`mt-2 text-sm font-medium ${critical ? "text-rose-700" : "text-[#17120f]"}`}>
-        {value}
-      </p>
-    </div>
   );
 }
 
