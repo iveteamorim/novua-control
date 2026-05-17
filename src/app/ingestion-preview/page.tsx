@@ -67,7 +67,7 @@ export default function IngestionPreviewPage() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid items-start gap-3 sm:grid-cols-3">
               <StatCard label="Preview sources" value="GitHub + Vercel" />
               <StatCard label="Output shape" value="Artifacts · Events · Signals" />
               <StatCard label="Decision model" value="Deterministic before AI" />
@@ -75,7 +75,7 @@ export default function IngestionPreviewPage() {
           </div>
         </header>
 
-        <section className="grid gap-6 xl:grid-cols-2">
+        <section className="grid items-start gap-6 xl:grid-cols-2">
           <PreviewPanel
             source="GitHub webhook"
             eventType="pull_request"
@@ -126,7 +126,7 @@ function PreviewPanel({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid items-start gap-3 sm:grid-cols-3">
         <CountCard label="Artifacts" value={String(preview.artifacts.length)} />
         <CountCard label="Events" value={String(preview.events.length)} />
         <CountCard label="Signals" value={String(preview.signals.length)} />
@@ -142,7 +142,7 @@ function PreviewPanel({
         </p>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+      <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
         <OutputBlock
           title="Artifact"
           items={preview.artifacts.map((artifact) => ({

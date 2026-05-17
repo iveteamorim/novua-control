@@ -85,7 +85,7 @@ export default async function AlertDetailPage({
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Decision rationale"
@@ -164,7 +164,7 @@ export default async function AlertDetailPage({
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-2">
+        <section className="grid items-start gap-6 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
             <SectionHeader
               eyebrow="Dependency chain"
@@ -229,7 +229,7 @@ export default async function AlertDetailPage({
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid items-start gap-4 md:grid-cols-3">
             {sourceOverview.map((source) => (
               <SourceCard
                 key={source.source}

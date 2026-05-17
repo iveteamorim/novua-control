@@ -136,7 +136,7 @@ export default function PilotPage() {
                 </div>
               </div>
 
-              <div className="grid gap-3 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-4 sm:grid-cols-2">
+              <div className="grid items-start gap-3 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-4 sm:grid-cols-2">
                 <PilotFact label="Pilot length" value="4 weeks" />
                 <PilotFact label="Scope" value="1 release train" />
                 <PilotFact label="Integrations" value="GitHub + Vercel + Linear" />
@@ -193,7 +193,7 @@ export default function PilotPage() {
               </ul>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid items-start gap-3 sm:grid-cols-2">
               <PriceCard label="Setup" value="€1,500–€3,000" />
               <PriceCard label="4-week pilot" value="€2,000+" />
             </div>
@@ -240,7 +240,7 @@ export default function PilotPage() {
             title="What happens over four weeks"
           />
 
-          <div className="mt-5 grid gap-3 xl:grid-cols-4">
+          <div className="mt-5 grid items-start gap-3 xl:grid-cols-4">
             {processSteps.map((step) => (
               <div
                 key={step.label}

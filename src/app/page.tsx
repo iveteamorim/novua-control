@@ -63,78 +63,103 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#f6f3ee] text-[#151311]">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="rounded-[1.8rem] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,248,244,0.95),rgba(255,255,255,1)_48%)] p-5 shadow-[0_24px_80px_rgba(17,24,39,0.05)]">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-black/8 bg-[#f7f7f4] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#7e746b]">
-                  Novua Control
-                </span>
-                <span
-                  className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] ${severityStyles[topAlert.severity]}`}
-                >
-                  {topAlert.severity} incident
-                </span>
-              </div>
-              <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#17120f] sm:text-[3.2rem]">
-                Checkout release blocked
-              </h1>
-              <p className="max-w-4xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                Checkout cannot ship until a backend owner clears the blocked API
-                review or the team removes checkout-v2 from today&apos;s release.
-              </p>
-              <div className="flex flex-wrap gap-3 pt-1">
-                <LiveStripPill
-                  tone="critical"
-                  label="live incident"
-                  value={`updated ${formatMoment(lastUpdated)}`}
-                />
-                <LiveStripPill
-                  tone="neutral"
-                  label="signals"
-                  value={`${liveSignalCount} active signals`}
-                />
-                {lastAuditEntries[0] ? (
+        <header className="overflow-hidden rounded-[2rem] border border-rose-200/70 bg-[linear-gradient(135deg,rgba(255,248,244,0.95),rgba(255,255,255,1)_44%)] shadow-[0_24px_80px_rgba(17,24,39,0.05)]">
+          <div className="grid items-start xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="px-5 py-6 sm:px-6 sm:py-7 xl:px-8 xl:py-8">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="rounded-full border border-black/8 bg-white px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-[#7e746b]">
+                    Novua Control
+                  </span>
+                  <span
+                    className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] ${severityStyles[topAlert.severity]}`}
+                  >
+                    {topAlert.severity} incident
+                  </span>
+                </div>
+
+                <h1 className="max-w-4xl text-5xl font-semibold leading-[0.94] tracking-[-0.04em] text-[#17120f] sm:text-[5.3rem]">
+                  Checkout release
+                  <br />
+                  blocked
+                </h1>
+
+                <p className="max-w-3xl text-base leading-8 text-[#5f564e] sm:text-lg">
+                  Checkout cannot ship until a backend owner clears the blocked API
+                  review or the team removes checkout-v2 from today&apos;s release.
+                </p>
+
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <LiveStripPill
+                    tone="critical"
+                    label="live incident"
+                    value={`updated ${formatMoment(lastUpdated)}`}
+                  />
                   <LiveStripPill
                     tone="neutral"
-                    label="latest activity"
-                    value={lastAuditEntries[0].action}
+                    label="signals"
+                    value={`${liveSignalCount} active`}
                   />
-                ) : null}
+                  {lastAuditEntries[0] ? (
+                    <LiveStripPill
+                      tone="neutral"
+                      label="latest"
+                      value={lastAuditEntries[0].action}
+                    />
+                  ) : null}
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Link
+                    href={`/alerts/${topAlert.id}`}
+                    className="inline-flex rounded-full border border-black/8 bg-black px-5 py-3 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
+                  >
+                    Open incident trace
+                  </Link>
+                  <Link
+                    href="/ingestion-preview"
+                    className="inline-flex rounded-full border border-black/8 bg-white px-5 py-3 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
+                  >
+                    View raw signals
+                  </Link>
+                </div>
               </div>
             </div>
 
-            <div className="grid gap-3 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-4 sm:grid-cols-2 xl:min-w-[380px]">
-              <CompactFact label="Release window" value={releaseWindow} />
-              <CompactFact
-                label="Users affected"
-                value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
-              />
-              <CompactFact
-                label="Upstream delay"
-                value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
-              />
-              <CompactFact
-                label="Rollout"
-                value={`${rolloutPercentage ?? 0}%`}
-                critical={(rolloutPercentage ?? 0) === 0}
-              />
-            </div>
-          </div>
+            <aside className="border-t border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,247,244,0.92))] px-5 py-6 sm:px-6 sm:py-7 xl:border-l xl:border-t-0 xl:px-6 xl:py-8">
+              <div className="rounded-[1.45rem] border border-rose-300/70 bg-white p-4 shadow-[0_10px_30px_rgba(225,29,72,0.06)]">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.22em] text-[#93867b]">
+                      Risk score
+                    </p>
+                    <p className="mt-3 text-6xl font-semibold leading-none tracking-[-0.04em] text-[#17120f]">
+                      {topAlert.riskScore}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
+                    severe
+                  </span>
+                </div>
+              </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link
-              href={`/alerts/${topAlert.id}`}
-              className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
-            >
-              Open incident trace
-            </Link>
-            <Link
-              href="/ingestion-preview"
-              className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]"
-            >
-              View raw signals
-            </Link>
+              <div className="mt-4 grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-2">
+                <CompactFact label="Release window" value={releaseWindow} />
+                <CompactFact
+                  label="Users affected"
+                  value={impactedUsers ? formatCompactNumber(impactedUsers) : "1.2k"}
+                />
+                <CompactFact
+                  label="Upstream delay"
+                  value={`${openHours ?? snapshot.meanDecisionDelayHours}h`}
+                />
+                <CompactFact
+                  label="Rollout"
+                  value={`${rolloutPercentage ?? 0}%`}
+                  critical={(rolloutPercentage ?? 0) === 0}
+                />
+              </div>
+            </aside>
           </div>
         </header>
 
@@ -151,7 +176,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 xl:grid-cols-4">
+          <div className="mt-5 grid items-start gap-3 xl:grid-cols-4">
             {queueAlerts.map((alert) => (
               <IncidentQueueCard
                 key={alert.id}
@@ -267,7 +292,7 @@ export default async function Home() {
               />
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid items-start gap-3 sm:grid-cols-2">
               <CaseFact label="Priority" value={`${topAlert.riskScore}`} />
               <CaseFact label="Current state" value={topAlert.state} />
               <CaseFact
@@ -315,7 +340,7 @@ export default async function Home() {
               </Link>
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-3 xl:grid-cols-1">
+            <div className="mt-5 grid items-start gap-3 md:grid-cols-3 xl:grid-cols-1">
               {sourceOverview.map((source) => (
                 <SourcePill
                   key={source.source}
@@ -543,7 +568,7 @@ function IncidentQueueCard({
       </h3>
       <p className="mt-2 text-sm leading-6 text-[#615850]">{alert.summary}</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid items-start grid-cols-2 gap-3">
         <QueueMetric label="owner" value={alert.owner ?? "Unassigned"} critical={!alert.owner} />
         <QueueMetric label="state" value={alert.state} />
         <QueueMetric label="blocked" value={`${blockedNodes}`} />
