@@ -91,7 +91,7 @@ export default function IngestionPreviewPage() {
     <main className="min-h-screen bg-[#f3f0eb] text-[#151311]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
         <header className="rounded-[2.15rem] border border-black/6 bg-white px-8 py-7 shadow-[0_28px_80px_rgba(17,24,39,0.05)] sm:px-10 sm:py-8">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.48fr)_minmax(360px,.82fr)] xl:items-start">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.42fr)_minmax(360px,.82fr)] xl:items-start">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
@@ -106,10 +106,11 @@ export default function IngestionPreviewPage() {
               </div>
 
               <div className="space-y-4">
-                <h1 className="max-w-3xl text-5xl font-semibold tracking-[-0.08em] text-[#17120f] sm:text-6xl sm:leading-[0.95] lg:text-[5.35rem]">
-                  Real events become operational signals.
+                <h1 className="text-5xl font-semibold tracking-[-0.08em] text-[#17120f] sm:text-[4.65rem] sm:leading-[0.94] lg:text-[4.95rem]">
+                  <span className="block">Real events become</span>
+                  <span className="block">operational signals.</span>
                 </h1>
-                <p className="max-w-3xl text-lg leading-9 text-[#5f564e] sm:text-[1.28rem]">
+                <p className="max-w-[34rem] text-lg leading-9 text-[#5f564e] sm:text-[1.22rem]">
                   Control keeps the raw payload, extracts deterministic evidence,
                   and turns source events into incident-ready signals before AI
                   summarizes anything.
@@ -339,7 +340,7 @@ function HeroMetric({
       className={`min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5 ${className}`}
     >
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <p className="mt-3 text-[clamp(2rem,2.15vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#17120f]">
+      <p className="mt-3 text-[clamp(1.9rem,1.85vw,2.55rem)] font-semibold leading-[1.12] tracking-[-0.05em] text-[#17120f]">
         {value}
       </p>
     </div>
