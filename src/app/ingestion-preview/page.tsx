@@ -137,8 +137,8 @@ async function IngestionPreviewContent({
                 <span className="block">Vercel</span>
               </HeroMetric>
               <HeroMetric label="Output">
-                <span className="block">Artifacts ·</span>
-                <span className="block">Events ·</span>
+                <span className="block">Artifacts /</span>
+                <span className="block">Events /</span>
                 <span className="block">Signals</span>
               </HeroMetric>
               <HeroMetric label="Model">
@@ -353,9 +353,9 @@ function HeroMetric({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5">
+    <div className="min-w-0 overflow-hidden rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5">
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <div className="mt-4 max-w-[10ch] text-[clamp(0.95rem,0.82vw,1.18rem)] font-semibold leading-[1.18] tracking-[-0.035em] text-[#17120f]">
+      <div className="mt-4 max-w-[10ch] overflow-hidden text-[clamp(0.92rem,0.76vw,1.12rem)] font-semibold leading-[1.16] tracking-[-0.03em] text-[#17120f] [overflow-wrap:anywhere]">
         {children}
       </div>
     </div>
