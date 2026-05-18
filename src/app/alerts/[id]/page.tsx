@@ -6,12 +6,14 @@ import {
   resolveIncidentAction,
   startMitigationAction,
 } from "@/app/control-actions";
+import { SessionBar } from "@/components/session-bar";
 import {
   getAlertById,
   getAuditTrail,
   getSourceOverview,
 } from "@/lib/control/engine";
 import { formatRelativeTime } from "@/lib/control/normalize";
+import { requireWorkspaceSession } from "@/lib/auth/session";
 
 const severityStyles = {
   critical: "border-rose-300 bg-rose-50 text-rose-700",
@@ -26,10 +28,11 @@ export default async function AlertDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await requireWorkspaceSession(`/alerts/${id}`);
   const [alert, auditTrail, sourceOverview] = await Promise.all([
-    getAlertById(id),
-    getAuditTrail(id),
-    getSourceOverview(),
+    getAlertById(id, session.workspaceId),
+    getAuditTrail(id, session.workspaceId),
+    getSourceOverview(session.workspaceId),
   ]);
 
   if (!alert) {
@@ -45,6 +48,7 @@ export default async function AlertDetailPage({
   return (
     <main className="min-h-screen bg-white text-[#151311]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
+        <SessionBar session={session} />
         <header className="rounded-[2rem] border border-black/6 bg-white p-6 shadow-[0_24px_80px_rgba(17,24,39,0.05)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-4">

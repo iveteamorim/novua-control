@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { SessionBar } from "@/components/session-bar";
+import { requireWorkspaceSession } from "@/lib/auth/session";
 import {
   normalizeGitHubWebhook,
   normalizeVercelWebhook,
@@ -52,6 +54,16 @@ type PreviewSource = {
 };
 
 export default function IngestionPreviewPage() {
+  const sessionPromise = requireWorkspaceSession("/ingestion-preview");
+  return <IngestionPreviewContent sessionPromise={sessionPromise} />;
+}
+
+async function IngestionPreviewContent({
+  sessionPromise,
+}: {
+  sessionPromise: ReturnType<typeof requireWorkspaceSession>;
+}) {
+  const session = await sessionPromise;
   const githubPreview = normalizeGitHubWebhook(githubPayload, "pull_request");
   const vercelPreview = normalizeVercelWebhook(vercelPayload, "deployment.error");
 
@@ -90,6 +102,7 @@ export default function IngestionPreviewPage() {
   return (
     <main className="min-h-screen bg-[#f3f0eb] text-[#151311]">
       <div className="mx-auto flex w-full max-w-[1420px] flex-col gap-8 px-6 py-8 sm:px-8 lg:px-12">
+        <SessionBar session={session} />
         <header className="rounded-[2.15rem] border border-black/6 bg-white px-8 py-7 shadow-[0_28px_80px_rgba(17,24,39,0.05)] sm:px-10 sm:py-8">
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.66fr)_minmax(360px,.74fr)] xl:items-start">
             <div className="space-y-5">

@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
+import { getOptionalSession } from "@/lib/auth/session";
 import { getControlDataset } from "@/lib/control/repository";
 import { applyManualIncidentAction } from "@/lib/control/store";
 
@@ -20,6 +21,11 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
+  const session = await getOptionalSession();
+
+  if (!session?.workspaceId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const body = (await request.json().catch(() => null)) as
     | { action?: string; owner?: string; actor?: string }
     | null;
@@ -36,16 +42,17 @@ export async function POST(
     );
   }
 
-  const dataset = await getControlDataset();
+  const dataset = await getControlDataset(session.workspaceId);
   const result = await applyManualIncidentAction(dataset, {
     alertId: id,
     action: action as AllowedAction,
-    actor: body?.actor ?? "Novua Control API",
+    actor: body?.actor ?? session.displayName,
     owner: body?.owner,
-  });
+  }, session.workspaceId);
 
   revalidatePath("/");
   revalidatePath(`/alerts/${id}`);
+  revalidatePath("/ingestion-preview");
 
   return NextResponse.json({
     ok: true,

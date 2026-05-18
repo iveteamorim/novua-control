@@ -5,6 +5,7 @@ import type {
   ControlArtifact,
   ControlEvent,
   SourceBundle,
+  WorkspaceIntegrationRecord,
 } from "../types";
 
 type GitHubReviewer = {
@@ -72,26 +73,65 @@ type GitHubLivePull = {
 
 const GITHUB_API_BASE = "https://api.github.com";
 
-function isLiveGitHubEnabled() {
-  return Boolean(
-    process.env.NOVUA_CONTROL_ENABLE_GITHUB_LIVE === "1" &&
-      process.env.GITHUB_TOKEN &&
-      process.env.NOVUA_CONTROL_GITHUB_REPO,
-  );
+type GitHubConnectorConfig = {
+  token: string;
+  repository: string;
+};
+
+function buildEmptyGitHubBundle(): SourceBundle {
+  return {
+    source: "github",
+    mode: "seed",
+    artifacts: [],
+    events: [],
+    signals: [],
+  };
 }
 
-function githubHeaders() {
+function getGitHubConfig(
+  integration?: WorkspaceIntegrationRecord | null,
+): GitHubConnectorConfig | null {
+  if (integration === null) {
+    return null;
+  }
+
+  if (integration?.provider === "github") {
+    if (integration.enabled && integration.token && integration.repository) {
+      return {
+        token: integration.token,
+        repository: integration.repository,
+      };
+    }
+
+    return null;
+  }
+
+  if (
+    process.env.NOVUA_CONTROL_ENABLE_GITHUB_LIVE === "1" &&
+    process.env.GITHUB_TOKEN &&
+    process.env.NOVUA_CONTROL_GITHUB_REPO
+  ) {
+    return {
+      token: process.env.GITHUB_TOKEN,
+      repository: process.env.NOVUA_CONTROL_GITHUB_REPO,
+    };
+  }
+
+  return null;
+}
+
+function githubHeaders(token: string) {
   return {
     Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    Authorization: `Bearer ${token}`,
     "User-Agent": "novua-control",
     "X-GitHub-Api-Version": "2022-11-28",
   };
 }
 
-async function githubFetch<T>(path: string): Promise<T> {
+async function githubFetch<T>(path: string, token: string): Promise<T> {
   const response = await fetch(`${GITHUB_API_BASE}${path}`, {
-    headers: githubHeaders(),
+    headers: githubHeaders(token),
     cache: "no-store",
   });
 
@@ -313,12 +353,14 @@ function buildGitHubEvents(pull: GitHubLivePull, artifactId: string): ControlEve
 async function fetchLivePull(
   repo: string,
   summary: GitHubPullSummary,
+  token: string,
 ): Promise<GitHubLivePull> {
   const [detailResult, reviewsResult, checksResult] = await Promise.allSettled([
-    githubFetch<GitHubPullDetail>(`/repos/${repo}/pulls/${summary.number}`),
-    githubFetch<GitHubReview[]>(`/repos/${repo}/pulls/${summary.number}/reviews`),
+    githubFetch<GitHubPullDetail>(`/repos/${repo}/pulls/${summary.number}`, token),
+    githubFetch<GitHubReview[]>(`/repos/${repo}/pulls/${summary.number}/reviews`, token),
     githubFetch<GitHubCheckRunsResponse>(
       `/repos/${repo}/commits/${summary.head.sha}/check-runs`,
+      token,
     ),
   ]);
 
@@ -354,19 +396,28 @@ async function fetchLivePull(
   };
 }
 
-export async function getGitHubBundle(): Promise<SourceBundle> {
-  if (!isLiveGitHubEnabled()) {
+export async function getGitHubBundle(
+  integration?: WorkspaceIntegrationRecord | null,
+): Promise<SourceBundle> {
+  const config = getGitHubConfig(integration);
+
+  if (integration !== undefined && !config) {
+    return buildEmptyGitHubBundle();
+  }
+
+  if (!config) {
     return buildSeedSourceBundle("github", controlDataset);
   }
 
-  const repo = process.env.NOVUA_CONTROL_GITHUB_REPO!;
+  const repo = config.repository;
 
   try {
     const pulls = await githubFetch<GitHubPullSummary[]>(
       `/repos/${repo}/pulls?state=open&sort=updated&direction=desc&per_page=6`,
+      config.token,
     );
     const livePulls = await Promise.all(
-      pulls.map((pull) => fetchLivePull(repo, pull)),
+      pulls.map((pull) => fetchLivePull(repo, pull, config.token)),
     );
 
     const artifacts = livePulls.map((pull) => mapGitHubPullToArtifact(repo, pull));
@@ -382,6 +433,10 @@ export async function getGitHubBundle(): Promise<SourceBundle> {
       signals: buildSignalsForArtifacts(artifacts, events),
     };
   } catch {
+    if (integration) {
+      return buildEmptyGitHubBundle();
+    }
+
     return buildSeedSourceBundle("github", controlDataset);
   }
 }

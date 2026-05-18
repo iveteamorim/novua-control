@@ -4,7 +4,10 @@ import { getVercelBundle } from "./connectors/vercel";
 import { controlDataset } from "./fixtures";
 import { buildSignalsForArtifacts } from "./normalize";
 import type { ControlDataset, SourceBundle, SourceSystem } from "./types";
-import { getPersistedDatasetOverlay } from "./store";
+import {
+  getPersistedDatasetOverlay,
+  getWorkspaceIntegrationMap,
+} from "./store";
 
 function mergeLiveBundles(
   dataset: ControlDataset,
@@ -56,8 +59,11 @@ function dedupeById<T extends { id: string }>(items: T[]) {
   return Array.from(map.values());
 }
 
-async function mergePersistedOverlay(dataset: ControlDataset): Promise<ControlDataset> {
-  const overlay = await getPersistedDatasetOverlay();
+async function mergePersistedOverlay(
+  dataset: ControlDataset,
+  workspaceId?: string,
+): Promise<ControlDataset> {
+  const overlay = await getPersistedDatasetOverlay(workspaceId);
 
   if (
     overlay.artifacts.length === 0 &&
@@ -87,13 +93,17 @@ async function mergePersistedOverlay(dataset: ControlDataset): Promise<ControlDa
   };
 }
 
-export async function getControlDataset(): Promise<ControlDataset> {
+export async function getControlDataset(
+  workspaceId?: string,
+): Promise<ControlDataset> {
+  const integrationMap = await getWorkspaceIntegrationMap(workspaceId);
+  const scopedIntegrations = Boolean(workspaceId);
   const bundles = await Promise.all([
-    getGitHubBundle(),
-    getVercelBundle(),
-    getLinearBundle(),
+    getGitHubBundle(scopedIntegrations ? (integrationMap.github ?? null) : undefined),
+    getVercelBundle(scopedIntegrations ? (integrationMap.vercel ?? null) : undefined),
+    getLinearBundle(scopedIntegrations ? (integrationMap.linear ?? null) : undefined),
   ]);
 
   const datasetWithLive = mergeLiveBundles(controlDataset, bundles);
-  return mergePersistedOverlay(datasetWithLive);
+  return mergePersistedOverlay(datasetWithLive, workspaceId);
 }

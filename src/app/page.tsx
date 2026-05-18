@@ -5,6 +5,8 @@ import {
   resolveIncidentAction,
   startMitigationAction,
 } from "@/app/control-actions";
+import { SessionBar } from "@/components/session-bar";
+import { requireWorkspaceSession } from "@/lib/auth/session";
 import {
   getAuditTrail,
   getDashboardSnapshot,
@@ -24,12 +26,13 @@ const severityStyles = {
 };
 
 export default async function Home() {
+  const session = await requireWorkspaceSession("/");
   const [snapshot, sourceOverview] = await Promise.all([
-    getDashboardSnapshot(),
-    getSourceOverview(),
+    getDashboardSnapshot(session.workspaceId),
+    getSourceOverview(session.workspaceId),
   ]);
   const topAlert = snapshot.primaryAlert;
-  const auditTrail = await getAuditTrail(topAlert.id);
+  const auditTrail = await getAuditTrail(topAlert.id, session.workspaceId);
 
   const findArtifact = (id: string) =>
     topAlert.artifacts.find((artifact) => artifact.id === id);
@@ -55,6 +58,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#f6f3ee] text-[#151311]">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+        <SessionBar session={session} />
         <header className="overflow-hidden rounded-[2.2rem] border border-rose-200/80 bg-[linear-gradient(135deg,rgba(255,249,245,0.98),rgba(255,255,255,1)_42%)] shadow-[0_30px_90px_rgba(17,24,39,0.05)]">
           <div className="grid items-start xl:grid-cols-[minmax(0,1fr)_392px]">
             <div className="px-6 py-7 sm:px-7 sm:py-8 xl:px-10 xl:py-10">

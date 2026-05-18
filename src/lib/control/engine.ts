@@ -82,8 +82,8 @@ async function hydrateAlert(
   };
 }
 
-export async function getAlerts(): Promise<DecisionAlert[]> {
-  const dataset = await getControlDataset();
+export async function getAlerts(workspaceId?: string): Promise<DecisionAlert[]> {
+  const dataset = await getControlDataset(workspaceId);
   const alerts = await Promise.all(
     dataset.alertSeeds.map((seed) => hydrateAlert(seed.id, dataset)),
   );
@@ -95,8 +95,9 @@ export async function getAlerts(): Promise<DecisionAlert[]> {
 
 export async function getAlertById(
   alertId: string,
+  workspaceId?: string,
 ): Promise<DecisionAlert | null> {
-  const dataset = await getControlDataset();
+  const dataset = await getControlDataset(workspaceId);
   const seed = dataset.alertSeeds.find((item) => item.id === alertId);
 
   if (!seed) {
@@ -106,9 +107,11 @@ export async function getAlertById(
   return hydrateAlert(alertId, dataset);
 }
 
-export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
-  const dataset = await getControlDataset();
-  const alerts = await getAlerts();
+export async function getDashboardSnapshot(
+  workspaceId?: string,
+): Promise<DashboardSnapshot> {
+  const dataset = await getControlDataset(workspaceId);
+  const alerts = await getAlerts(workspaceId);
 
   const primaryAlert = alerts[0];
 
@@ -142,8 +145,10 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
   };
 }
 
-export async function getSourceOverview(): Promise<SourceOverview[]> {
-  const dataset = await getControlDataset();
+export async function getSourceOverview(
+  workspaceId?: string,
+): Promise<SourceOverview[]> {
+  const dataset = await getControlDataset(workspaceId);
 
   return sourceOrder.map((source) => ({
     source,
@@ -154,8 +159,8 @@ export async function getSourceOverview(): Promise<SourceOverview[]> {
   }));
 }
 
-export async function getArtifactsBySource() {
-  const dataset = await getControlDataset();
+export async function getArtifactsBySource(workspaceId?: string) {
+  const dataset = await getControlDataset(workspaceId);
 
   return {
     github: dataset.artifacts.filter((artifact) => artifact.source === "github"),
@@ -164,8 +169,8 @@ export async function getArtifactsBySource() {
   };
 }
 
-export async function getDependencyEdges() {
-  const dataset = await getControlDataset();
+export async function getDependencyEdges(workspaceId?: string) {
+  const dataset = await getControlDataset(workspaceId);
 
   return dataset.dependencies.map((edge) => {
     const from = dataset.artifacts.find((artifact) => artifact.id === edge.fromId);
@@ -179,14 +184,14 @@ export async function getDependencyEdges() {
   });
 }
 
-export async function getRecentEvents() {
-  const dataset = await getControlDataset();
+export async function getRecentEvents(workspaceId?: string) {
+  const dataset = await getControlDataset(workspaceId);
 
   return dataset.events;
 }
 
-export async function getAuditTrail(alertId?: string) {
-  const dataset = await getControlDataset();
+export async function getAuditTrail(alertId?: string, workspaceId?: string) {
+  const dataset = await getControlDataset(workspaceId);
 
   if (!alertId) {
     return dataset.auditTrail;

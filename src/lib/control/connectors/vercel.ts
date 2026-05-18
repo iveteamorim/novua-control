@@ -1,6 +1,11 @@
 import { controlDataset } from "../fixtures";
 import { buildSeedSourceBundle, formatRelativeTime } from "../normalize";
-import type { ControlArtifact, ControlEvent, SourceBundle } from "../types";
+import type {
+  ControlArtifact,
+  ControlEvent,
+  SourceBundle,
+  WorkspaceIntegrationRecord,
+} from "../types";
 
 type VercelDeployment = {
   uid: string;
@@ -11,12 +16,54 @@ type VercelDeployment = {
   meta?: Record<string, string | undefined>;
 };
 
-function isLiveVercelEnabled() {
-  return Boolean(
+type VercelConnectorConfig = {
+  token: string;
+  projectId: string;
+  teamId?: string | null;
+};
+
+function buildEmptyVercelBundle(): SourceBundle {
+  return {
+    source: "vercel",
+    mode: "seed",
+    artifacts: [],
+    events: [],
+    signals: [],
+  };
+}
+
+function getVercelConfig(
+  integration?: WorkspaceIntegrationRecord | null,
+): VercelConnectorConfig | null {
+  if (integration === null) {
+    return null;
+  }
+
+  if (integration?.provider === "vercel") {
+    if (integration.enabled && integration.token && integration.projectId) {
+      return {
+        token: integration.token,
+        projectId: integration.projectId,
+        teamId: integration.teamId,
+      };
+    }
+
+    return null;
+  }
+
+  if (
     process.env.NOVUA_CONTROL_ENABLE_VERCEL_LIVE === "1" &&
-      process.env.VERCEL_TOKEN &&
-      process.env.NOVUA_CONTROL_VERCEL_PROJECT_ID,
-  );
+    process.env.VERCEL_TOKEN &&
+    process.env.NOVUA_CONTROL_VERCEL_PROJECT_ID
+  ) {
+    return {
+      token: process.env.VERCEL_TOKEN,
+      projectId: process.env.NOVUA_CONTROL_VERCEL_PROJECT_ID,
+      teamId: process.env.NOVUA_CONTROL_VERCEL_TEAM_ID,
+    };
+  }
+
+  return null;
 }
 
 function mapVercelStatus(state: string): ControlArtifact["status"] {
@@ -75,24 +122,32 @@ function mapDeploymentToEvent(deployment: VercelDeployment): ControlEvent {
   };
 }
 
-export async function getVercelBundle(): Promise<SourceBundle> {
-  if (!isLiveVercelEnabled()) {
+export async function getVercelBundle(
+  integration?: WorkspaceIntegrationRecord | null,
+): Promise<SourceBundle> {
+  const config = getVercelConfig(integration);
+
+  if (integration !== undefined && !config) {
+    return buildEmptyVercelBundle();
+  }
+
+  if (!config) {
     return buildSeedSourceBundle("vercel", controlDataset);
   }
 
   const params = new URLSearchParams({
-    projectId: process.env.NOVUA_CONTROL_VERCEL_PROJECT_ID!,
+    projectId: config.projectId,
     limit: "8",
   });
 
-  if (process.env.NOVUA_CONTROL_VERCEL_TEAM_ID) {
-    params.set("teamId", process.env.NOVUA_CONTROL_VERCEL_TEAM_ID);
+  if (config.teamId) {
+    params.set("teamId", config.teamId);
   }
 
   try {
     const response = await fetch(`https://api.vercel.com/v6/deployments?${params}`, {
       headers: {
-        Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
+        Authorization: `Bearer ${config.token}`,
       },
       cache: "no-store",
     });
@@ -114,6 +169,10 @@ export async function getVercelBundle(): Promise<SourceBundle> {
       signals: [],
     };
   } catch {
+    if (integration) {
+      return buildEmptyVercelBundle();
+    }
+
     return buildSeedSourceBundle("vercel", controlDataset);
   }
 }

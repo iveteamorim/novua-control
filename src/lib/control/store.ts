@@ -18,6 +18,8 @@ import type {
   ControlStore,
   IncidentState,
   IncidentTransition,
+  SourceSystem,
+  WorkspaceIntegrationRecord,
 } from "./types";
 
 const STORE_FILE = process.env.NOVUA_CONTROL_STORE_FILE
@@ -27,6 +29,10 @@ const STORE_FILE = process.env.NOVUA_CONTROL_STORE_FILE
     : path.join(process.cwd(), ".novua-control-store.json");
 
 const EMPTY_STORE: ControlStore = {
+  users: [],
+  workspaces: [],
+  workspaceMembers: [],
+  workspaceIntegrations: [],
   ingestions: [],
   incidents: [],
   auditTrail: [],
@@ -41,6 +47,17 @@ export type PersistedDatasetOverlay = {
   alertStates: Partial<Record<string, IncidentState>>;
   incidentTransitions: IncidentTransition[];
 };
+
+function recordMatchesWorkspace(
+  workspaceId: string | undefined,
+  recordWorkspaceId?: string,
+) {
+  if (!workspaceId) {
+    return true;
+  }
+
+  return recordWorkspaceId === workspaceId;
+}
 
 type StateEvaluation = {
   state: IncidentState;
@@ -66,6 +83,14 @@ function toStore(input: unknown): ControlStore {
   const record = input as Partial<ControlStore>;
 
   return {
+    users: Array.isArray(record.users) ? record.users : [],
+    workspaces: Array.isArray(record.workspaces) ? record.workspaces : [],
+    workspaceMembers: Array.isArray(record.workspaceMembers)
+      ? record.workspaceMembers
+      : [],
+    workspaceIntegrations: Array.isArray(record.workspaceIntegrations)
+      ? record.workspaceIntegrations
+      : [],
     ingestions: Array.isArray(record.ingestions) ? record.ingestions : [],
     incidents: Array.isArray(record.incidents) ? record.incidents : [],
     auditTrail: Array.isArray(record.auditTrail) ? record.auditTrail : [],
@@ -87,8 +112,73 @@ export async function readControlStore(): Promise<ControlStore> {
   }
 }
 
-async function writeControlStore(store: ControlStore) {
+export async function writeControlStoreSnapshot(store: ControlStore) {
   await writeControlStoreText(STORE_FILE, JSON.stringify(store, null, 2));
+}
+
+async function writeControlStore(store: ControlStore) {
+  await writeControlStoreSnapshot(store);
+}
+
+export function buildWorkspaceIntegrationId(
+  workspaceId: string,
+  provider: SourceSystem,
+) {
+  return `integration-${workspaceId}-${provider}`;
+}
+
+export async function getWorkspaceIntegrations(workspaceId: string) {
+  const store = await readControlStore();
+  return store.workspaceIntegrations.filter(
+    (integration) => integration.workspaceId === workspaceId,
+  );
+}
+
+export async function getWorkspaceIntegrationMap(workspaceId?: string) {
+  if (!workspaceId) {
+    return {};
+  }
+
+  const integrations = await getWorkspaceIntegrations(workspaceId);
+
+  return Object.fromEntries(
+    integrations.map((integration) => [integration.provider, integration]),
+  ) as Partial<Record<SourceSystem, WorkspaceIntegrationRecord>>;
+}
+
+export async function upsertWorkspaceIntegration(
+  integration: WorkspaceIntegrationRecord,
+) {
+  const store = await readControlStore();
+  const index = store.workspaceIntegrations.findIndex(
+    (candidate) =>
+      candidate.workspaceId === integration.workspaceId &&
+      candidate.provider === integration.provider,
+  );
+
+  if (index >= 0) {
+    store.workspaceIntegrations[index] = integration;
+  } else {
+    store.workspaceIntegrations.push(integration);
+  }
+
+  await writeControlStore(store);
+  return integration;
+}
+
+export async function removeWorkspaceIntegration(
+  workspaceId: string,
+  provider: SourceSystem,
+) {
+  const store = await readControlStore();
+  store.workspaceIntegrations = store.workspaceIntegrations.filter(
+    (integration) =>
+      !(
+        integration.workspaceId === workspaceId &&
+        integration.provider === provider
+      ),
+  );
+  await writeControlStore(store);
 }
 
 function findAffectedAlertIds(preview: IngestionPreview, dataset: ControlDataset) {
@@ -262,10 +352,13 @@ function dedupeById<T extends { id: string }>(items: T[]) {
 export async function persistIngestionPreview(
   preview: IngestionPreview,
   dataset: ControlDataset,
+  workspaceId?: string,
 ) {
   const store = await readControlStore();
   const existingEventIds = new Set(
-    store.ingestions.flatMap((ingestion) => ingestion.events.map((event) => event.id)),
+    store.ingestions
+      .filter((ingestion) => recordMatchesWorkspace(workspaceId, ingestion.workspaceId))
+      .flatMap((ingestion) => ingestion.events.map((event) => event.id)),
   );
   const duplicate =
     preview.events.length > 0 && preview.events.every((event) => existingEventIds.has(event.id));
@@ -285,6 +378,7 @@ export async function persistIngestionPreview(
 
   store.ingestions.push({
     id: ingestionId,
+    workspaceId,
     source: preview.source,
     eventType: preview.eventType,
     receivedAt: preview.receivedAt,
@@ -294,7 +388,9 @@ export async function persistIngestionPreview(
   });
 
   const persistedArtifacts = dedupeById(
-    store.ingestions.flatMap((ingestion) => ingestion.artifacts),
+    store.ingestions
+      .filter((ingestion) => recordMatchesWorkspace(workspaceId, ingestion.workspaceId))
+      .flatMap((ingestion) => ingestion.artifacts),
   );
   const affectedAlertIds = findAffectedAlertIds(preview, dataset);
 
@@ -306,18 +402,27 @@ export async function persistIngestionPreview(
     }
 
     const currentRecord =
-      store.incidents.find((incident) => incident.alertId === alertId) ?? null;
+      store.incidents.find(
+        (incident) =>
+          incident.alertId === alertId &&
+          recordMatchesWorkspace(workspaceId, incident.workspaceId),
+      ) ?? null;
     const previousState = currentRecord?.state ?? seed.state;
     const relevantArtifacts = getRelevantArtifactsForAlert(seed, dataset, persistedArtifacts);
     const evaluation = deriveIncidentState(seed, relevantArtifacts, previousState);
 
-    store.auditTrail.push(
-      buildIngestionAuditEntry(alertId, preview, `${preview.source} webhook`),
+    const ingestionAuditEntry = buildIngestionAuditEntry(
+      alertId,
+      preview,
+      `${preview.source} webhook`,
     );
+    ingestionAuditEntry.workspaceId = workspaceId;
+    store.auditTrail.push(ingestionAuditEntry);
 
     if (!currentRecord) {
       store.incidents.push({
         alertId,
+        workspaceId,
         state: evaluation.state,
         owner: seed.owner,
         updatedAt: preview.receivedAt,
@@ -342,7 +447,9 @@ export async function persistIngestionPreview(
           ?.transitions.at(-1);
 
         if (transition) {
-          store.auditTrail.push(buildTransitionAuditEntry(transition));
+          const transitionAuditEntry = buildTransitionAuditEntry(transition);
+          transitionAuditEntry.workspaceId = workspaceId;
+          store.auditTrail.push(transitionAuditEntry);
         }
       }
 
@@ -366,7 +473,9 @@ export async function persistIngestionPreview(
     currentRecord.state = evaluation.state;
     currentRecord.updatedAt = preview.receivedAt;
     currentRecord.transitions.push(transition);
-    store.auditTrail.push(buildTransitionAuditEntry(transition));
+    const transitionAuditEntry = buildTransitionAuditEntry(transition);
+    transitionAuditEntry.workspaceId = workspaceId;
+    store.auditTrail.push(transitionAuditEntry);
   }
 
   store.ingestions = dedupeById(store.ingestions);
@@ -387,33 +496,49 @@ export async function persistIngestionPreview(
   };
 }
 
-export async function getPersistedDatasetOverlay(): Promise<PersistedDatasetOverlay> {
+export async function getPersistedDatasetOverlay(
+  workspaceId?: string,
+): Promise<PersistedDatasetOverlay> {
   const store = await readControlStore();
   const artifacts = dedupeById(
     [
-      ...store.ingestions.flatMap((ingestion) => ingestion.artifacts),
-      ...store.manualArtifacts,
+      ...store.ingestions
+        .filter((ingestion) => recordMatchesWorkspace(workspaceId, ingestion.workspaceId))
+        .flatMap((ingestion) => ingestion.artifacts),
+      ...store.manualArtifacts.filter((artifact) =>
+        recordMatchesWorkspace(workspaceId, artifact.workspaceId),
+      ),
     ],
   );
   const events = dedupeById(
-    store.ingestions.flatMap((ingestion) => ingestion.events),
+    store.ingestions
+      .filter((ingestion) => recordMatchesWorkspace(workspaceId, ingestion.workspaceId))
+      .flatMap((ingestion) => ingestion.events),
   );
   const signals = dedupeById(
-    store.ingestions.flatMap((ingestion) => ingestion.signals),
+    store.ingestions
+      .filter((ingestion) => recordMatchesWorkspace(workspaceId, ingestion.workspaceId))
+      .flatMap((ingestion) => ingestion.signals),
+  );
+  const incidents = store.incidents.filter((incident) =>
+    recordMatchesWorkspace(workspaceId, incident.workspaceId),
+  );
+  const auditTrail = store.auditTrail.filter((entry) =>
+    recordMatchesWorkspace(workspaceId, entry.workspaceId),
   );
 
   return {
     artifacts,
     events,
     signals,
-    auditTrail: dedupeById(store.auditTrail),
+    auditTrail: dedupeById(auditTrail),
     alertStates: Object.fromEntries(
-      store.incidents
+      incidents
         .filter((incident) => isValidState(incident.state))
         .map((incident) => [incident.alertId, incident.state]),
     ),
     incidentTransitions: dedupeById(
-      store.incidents.flatMap((incident) => incident.transitions),
+      incidents.flatMap((incident) => incident.transitions),
     ),
   };
 }
@@ -452,7 +577,7 @@ function buildActionAuditEntry({
   at: string;
   beforeState?: IncidentState;
   afterState?: IncidentState;
-}) {
+}): AuditEntry {
   return {
     id: `audit-manual-${alertId}-${action.replace(/\s+/g, "-").toLowerCase()}-${at}`,
     alertId,
@@ -462,12 +587,13 @@ function buildActionAuditEntry({
     details,
     beforeState,
     afterState,
-  } satisfies AuditEntry;
+  };
 }
 
 export async function applyManualIncidentAction(
   dataset: ControlDataset,
   input: ManualIncidentActionInput,
+  workspaceId?: string,
 ) {
   const store = await readControlStore();
   const seed = dataset.alertSeeds.find((item) => item.id === input.alertId);
@@ -479,13 +605,22 @@ export async function applyManualIncidentAction(
   const now = new Date().toISOString();
   const touched: ControlArtifact[] = [];
   const currentRecord =
-    store.incidents.find((incident) => incident.alertId === input.alertId) ?? null;
+    store.incidents.find(
+      (incident) =>
+        incident.alertId === input.alertId &&
+        recordMatchesWorkspace(workspaceId, incident.workspaceId),
+    ) ?? null;
   const previousState = currentRecord?.state ?? seed.state;
 
   const currentArtifacts = getRelevantArtifactsForAlert(
     seed,
     dataset,
-    dedupeById([...dataset.artifacts, ...store.manualArtifacts]),
+    dedupeById([
+      ...dataset.artifacts,
+      ...store.manualArtifacts.filter((artifact) =>
+        recordMatchesWorkspace(workspaceId, artifact.workspaceId),
+      ),
+    ]),
   );
 
   const getByType = (type: ControlArtifact["type"]) =>
@@ -497,6 +632,7 @@ export async function applyManualIncidentAction(
     if (pr) {
       touched.push({
         ...pr,
+        workspaceId,
         owner: input.owner ?? "Backend owner",
         updatedAt: now,
         summary: "Checkout API review now has an explicit backend owner and is waiting for clearance.",
@@ -510,6 +646,7 @@ export async function applyManualIncidentAction(
     if (deploy) {
       touched.push({
         ...deploy,
+        workspaceId,
         status: "in_progress",
         updatedAt: now,
         summary: "Frontend owner started mitigation on the blocked production deployment.",
@@ -530,6 +667,7 @@ export async function applyManualIncidentAction(
       if (["blocked", "waiting_review", "failed", "queued", "in_progress"].includes(artifact.status)) {
         touched.push({
           ...artifact,
+          workspaceId,
           status: "healthy",
           updatedAt: now,
           summary: resolutionSummaries[artifact.type] ?? artifact.summary,
@@ -546,7 +684,12 @@ export async function applyManualIncidentAction(
     upsertManualArtifact(store, artifact);
   }
 
-  const mergedArtifacts = dedupeById([...dataset.artifacts, ...store.manualArtifacts]);
+  const mergedArtifacts = dedupeById([
+    ...dataset.artifacts,
+    ...store.manualArtifacts.filter((artifact) =>
+      recordMatchesWorkspace(workspaceId, artifact.workspaceId),
+    ),
+  ]);
   const relevantArtifacts = getRelevantArtifactsForAlert(seed, dataset, mergedArtifacts);
   const evaluation = deriveIncidentState(seed, relevantArtifacts, previousState);
 
@@ -565,17 +708,17 @@ export async function applyManualIncidentAction(
     },
   } satisfies Record<ManualIncidentActionInput["action"], { action: string; details: string }>;
 
-  store.auditTrail.push(
-    buildActionAuditEntry({
-      alertId: input.alertId,
-      actor: input.actor,
-      action: actionMap[input.action].action,
-      details: actionMap[input.action].details,
-      at: now,
-      beforeState: previousState,
-      afterState: evaluation.state,
-    }),
-  );
+  const actionAuditEntry = buildActionAuditEntry({
+    alertId: input.alertId,
+    actor: input.actor,
+    action: actionMap[input.action].action,
+    details: actionMap[input.action].details,
+    at: now,
+    beforeState: previousState,
+    afterState: evaluation.state,
+  });
+  actionAuditEntry.workspaceId = workspaceId;
+  store.auditTrail.push(actionAuditEntry);
 
   if (!currentRecord) {
     const transitions =
@@ -594,6 +737,7 @@ export async function applyManualIncidentAction(
 
     store.incidents.push({
       alertId: input.alertId,
+      workspaceId,
       state: evaluation.state,
       owner: seed.owner,
       updatedAt: now,
@@ -601,7 +745,9 @@ export async function applyManualIncidentAction(
     });
 
     if (transitions[0]) {
-      store.auditTrail.push(buildTransitionAuditEntry(transitions[0]));
+      const transitionAuditEntry = buildTransitionAuditEntry(transitions[0]);
+      transitionAuditEntry.workspaceId = workspaceId;
+      store.auditTrail.push(transitionAuditEntry);
     }
   } else if (currentRecord.state !== evaluation.state) {
     const transition = buildTransition(
@@ -616,7 +762,9 @@ export async function applyManualIncidentAction(
     currentRecord.state = evaluation.state;
     currentRecord.updatedAt = now;
     currentRecord.transitions.push(transition);
-    store.auditTrail.push(buildTransitionAuditEntry(transition));
+    const transitionAuditEntry = buildTransitionAuditEntry(transition);
+    transitionAuditEntry.workspaceId = workspaceId;
+    store.auditTrail.push(transitionAuditEntry);
   } else {
     currentRecord.updatedAt = now;
   }

@@ -1,5 +1,8 @@
 export type SourceSystem = "github" | "vercel" | "linear";
 
+export type WorkspaceRole = "owner" | "member";
+export type WorkspaceIntegrationStatus = "not_configured" | "connected" | "degraded";
+
 export type IncidentState =
   | "detected"
   | "triaged"
@@ -25,6 +28,7 @@ export type ArtifactStatus =
 
 export type ControlArtifact = {
   id: string;
+  workspaceId?: string;
   label: string;
   type: ArtifactType;
   source: SourceSystem;
@@ -109,6 +113,7 @@ export type DecisionAlert = AlertSeed & {
 
 export type AuditEntry = {
   id: string;
+  workspaceId?: string;
   alertId: string | null;
   at: string;
   actor: string;
@@ -151,6 +156,7 @@ export type ControlDataset = {
 
 export type PersistedIngestionRecord = {
   id: string;
+  workspaceId?: string;
   source: SourceSystem;
   eventType: string;
   receivedAt: string;
@@ -161,13 +167,78 @@ export type PersistedIngestionRecord = {
 
 export type PersistedIncidentRecord = {
   alertId: string;
+  workspaceId?: string;
   state: IncidentState;
   owner: string | null;
   updatedAt: string;
   transitions: IncidentTransition[];
 };
 
+export type StoredUser = {
+  id: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  defaultWorkspaceId: string | null;
+  createdAt: string;
+  lastSignedInAt: string | null;
+};
+
+export type WorkspaceRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  ownerUserId: string;
+  createdAt: string;
+};
+
+export type WorkspaceMemberRecord = {
+  id: string;
+  workspaceId: string;
+  userId: string;
+  role: WorkspaceRole;
+  createdAt: string;
+};
+
+type WorkspaceIntegrationBase = {
+  id: string;
+  workspaceId: string;
+  status: WorkspaceIntegrationStatus;
+  enabled: boolean;
+  updatedAt: string;
+  lastValidatedAt: string | null;
+  lastError: string | null;
+};
+
+export type GitHubIntegrationRecord = WorkspaceIntegrationBase & {
+  provider: "github";
+  repository: string;
+  token: string;
+};
+
+export type VercelIntegrationRecord = WorkspaceIntegrationBase & {
+  provider: "vercel";
+  token: string;
+  projectId: string;
+  teamId: string | null;
+};
+
+export type LinearIntegrationRecord = WorkspaceIntegrationBase & {
+  provider: "linear";
+  apiKey: string;
+  teamKey: string;
+};
+
+export type WorkspaceIntegrationRecord =
+  | GitHubIntegrationRecord
+  | VercelIntegrationRecord
+  | LinearIntegrationRecord;
+
 export type ControlStore = {
+  users: StoredUser[];
+  workspaces: WorkspaceRecord[];
+  workspaceMembers: WorkspaceMemberRecord[];
+  workspaceIntegrations: WorkspaceIntegrationRecord[];
   ingestions: PersistedIngestionRecord[];
   incidents: PersistedIncidentRecord[];
   auditTrail: AuditEntry[];
