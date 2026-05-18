@@ -61,20 +61,20 @@ export default async function SignUpPage({
             <Field label="Workspace name" name="workspaceName" type="text" />
             <Field label="Email" name="email" type="email" />
             <Field label="Password" name="password" type="password" />
-            <label className="flex items-start gap-3 rounded-2xl border border-black/6 bg-[#fbfaf7] px-4 py-4">
+            <label className="flex items-start gap-3 rounded-[1.35rem] border border-black/6 bg-[#faf8f2] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <input
                 type="checkbox"
                 name="acceptedTerms"
                 required
-                className="mt-1 h-4 w-4 rounded border-black/20"
+                className="mt-1 h-4 w-4 rounded border-black/20 accent-[#17120f]"
               />
-              <LegalLinks compact />
+              <LegalLinks compact textClassName="text-[#5f564e]" />
             </label>
             <button className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white">
               Create account
             </button>
           </form>
-          <p className="mt-5 text-sm text-[#5f564e]">
+          <p className="mt-4 text-sm text-[#5f564e]">
             Already have an account?{" "}
             <Link href="/sign-in" className="font-medium text-[#17120f] underline">
               Sign in
@@ -101,7 +101,7 @@ function Field({
         {label}
       </span>
       <input
-        className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
+        className="w-full rounded-[1.35rem] border border-black/8 bg-[#fbfaf7] px-4 py-3.5 text-base text-[#17120f] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition placeholder:text-[#9a8e82] focus:border-amber-300 focus:bg-white focus:ring-4 focus:ring-amber-100/70"
         type={type}
         name={name}
         required

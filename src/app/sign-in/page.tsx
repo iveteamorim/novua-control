@@ -64,7 +64,7 @@ export default async function SignInPage({
               Sign in
             </button>
           </form>
-          <p className="mt-5 text-sm text-[#5f564e]">
+          <p className="mt-4 text-sm text-[#5f564e]">
             No account yet?{" "}
             <Link href="/sign-up" className="font-medium text-[#17120f] underline">
               Create one
@@ -94,7 +94,7 @@ function Field({
         {label}
       </span>
       <input
-        className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
+        className="w-full rounded-[1.35rem] border border-black/8 bg-[#fbfaf7] px-4 py-3.5 text-base text-[#17120f] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition placeholder:text-[#9a8e82] focus:border-amber-300 focus:bg-white focus:ring-4 focus:ring-amber-100/70"
         type={type}
         name={name}
         required
