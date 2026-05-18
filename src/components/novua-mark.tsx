@@ -10,11 +10,7 @@ export function NovuaMark({
   const content = (
     <div className="inline-flex items-center gap-3">
       <span className="grid h-11 w-11 place-items-center rounded-2xl border border-black/8 bg-white shadow-[0_10px_30px_rgba(17,24,39,0.05)]">
-        <span className="relative block h-5 w-5">
-          <span className="absolute inset-y-0 left-0 w-[5px] rounded-full bg-[#17120f]" />
-          <span className="absolute inset-y-0 left-[7px] w-[5px] rounded-full bg-[#17120f]" />
-          <span className="absolute inset-y-0 right-0 w-[5px] rounded-full bg-amber-500" />
-        </span>
+        <NovuaSymbol />
       </span>
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-[#8a7d71]">
@@ -39,5 +35,35 @@ export function NovuaMark({
     <Link href={href} className="inline-flex">
       {content}
     </Link>
+  );
+}
+
+function NovuaSymbol() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      fill="none"
+      aria-hidden="true"
+      className="overflow-visible"
+    >
+      <path
+        d="M5.5 5.5V10.5C5.5 12.1 6.8 13.4 8.4 13.4H12.1C13.2 13.4 14.1 14.3 14.1 15.4V16.6"
+        stroke="#17120f"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="5.5" cy="5.5" r="2.5" fill="#17120f" />
+      <circle cx="5.5" cy="16.5" r="2.5" fill="#17120f" />
+      <circle cx="16.5" cy="16.5" r="2.7" fill="#f59e0b" />
+      <path
+        d="M8.8 11H13.8"
+        stroke="#f59e0b"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
