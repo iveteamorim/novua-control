@@ -80,9 +80,6 @@ export default async function SignUpPage({
               Sign in
             </Link>
           </p>
-          <div className="mt-5 border-t border-black/6 pt-5">
-            <LegalLinks />
-          </div>
         </section>
       </div>
     </main>
