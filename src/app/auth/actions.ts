@@ -52,11 +52,19 @@ export async function signUpAction(formData: FormData) {
   const password = getString(formData, "password");
   const displayName = getString(formData, "displayName");
   const workspaceName = getString(formData, "workspaceName");
+  const acceptedTerms = formData.get("acceptedTerms") === "on";
 
   if (!email || !password || !workspaceName) {
     errorRedirect(
       "/sign-up",
       "Email, password, and workspace name are required.",
+    );
+  }
+
+  if (!acceptedTerms) {
+    errorRedirect(
+      "/sign-up",
+      "You must accept the Terms of Service, Privacy Policy, and Data Processing Agreement.",
     );
   }
 

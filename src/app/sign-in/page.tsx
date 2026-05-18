@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { signInAction } from "@/app/auth/actions";
+import { LegalLinks } from "@/components/legal-links";
+import { NovuaMark } from "@/components/novua-mark";
 import { getOptionalSession } from "@/lib/auth/session";
 
 export default async function SignInPage({
@@ -32,8 +34,9 @@ export default async function SignInPage({
     <main className="min-h-screen bg-[#f6f3ee] px-6 py-10 text-[#151311]">
       <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-[2rem] border border-black/6 bg-white p-8 shadow-[0_24px_80px_rgba(17,24,39,0.06)]">
+          <NovuaMark href="/" />
           <p className="text-xs font-medium uppercase tracking-[0.36em] text-amber-700">
-            Novua Control
+            <span className="mt-6 inline-block">Novua Control</span>
           </p>
           <h1 className="mt-5 text-5xl font-semibold tracking-[-0.06em] text-[#17120f]">
             Sign in to your workspace
@@ -67,6 +70,9 @@ export default async function SignInPage({
               Create one
             </Link>
           </p>
+          <div className="mt-5 border-t border-black/6 pt-5">
+            <LegalLinks />
+          </div>
         </section>
       </div>
     </main>

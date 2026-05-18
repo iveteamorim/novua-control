@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { signUpAction } from "@/app/auth/actions";
+import { LegalLinks } from "@/components/legal-links";
+import { NovuaMark } from "@/components/novua-mark";
 import { getOptionalSession } from "@/lib/auth/session";
 
 export default async function SignUpPage({
@@ -32,8 +34,9 @@ export default async function SignUpPage({
     <main className="min-h-screen bg-[#f6f3ee] px-6 py-10 text-[#151311]">
       <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="rounded-[2rem] border border-black/6 bg-white p-8 shadow-[0_24px_80px_rgba(17,24,39,0.06)]">
+          <NovuaMark href="/" />
           <p className="text-xs font-medium uppercase tracking-[0.36em] text-amber-700">
-            Create workspace
+            <span className="mt-6 inline-block">Create workspace</span>
           </p>
           <h1 className="mt-5 text-5xl font-semibold tracking-[-0.06em] text-[#17120f]">
             Start your control layer
@@ -58,6 +61,15 @@ export default async function SignUpPage({
             <Field label="Workspace name" name="workspaceName" type="text" />
             <Field label="Email" name="email" type="email" />
             <Field label="Password" name="password" type="password" />
+            <label className="flex items-start gap-3 rounded-2xl border border-black/6 bg-[#fbfaf7] px-4 py-4">
+              <input
+                type="checkbox"
+                name="acceptedTerms"
+                required
+                className="mt-1 h-4 w-4 rounded border-black/20"
+              />
+              <LegalLinks compact />
+            </label>
             <button className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white">
               Create account
             </button>
@@ -68,6 +80,9 @@ export default async function SignUpPage({
               Sign in
             </Link>
           </p>
+          <div className="mt-5 border-t border-black/6 pt-5">
+            <LegalLinks />
+          </div>
         </section>
       </div>
     </main>
