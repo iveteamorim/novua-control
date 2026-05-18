@@ -355,7 +355,7 @@ function HeroMetric({
   return (
     <div className="min-w-0 rounded-[1.55rem] border border-black/6 bg-[#fbfaf7] px-5 py-5">
       <p className="text-xs uppercase tracking-[0.24em] text-[#93867b]">{label}</p>
-      <div className="mt-4 break-words text-[clamp(0.95rem,0.92vw,1.36rem)] font-semibold leading-[1.1] tracking-[-0.04em] text-[#17120f]">
+      <div className="mt-4 max-w-[10ch] text-[clamp(0.95rem,0.82vw,1.18rem)] font-semibold leading-[1.18] tracking-[-0.035em] text-[#17120f]">
         {children}
       </div>
     </div>
