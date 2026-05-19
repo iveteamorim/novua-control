@@ -22,13 +22,13 @@ export function ThemeToggle() {
   }
 
   return (
-    <div className="fixed right-4 top-4 z-[90] sm:right-6 sm:top-6">
+    <div className="fixed bottom-4 right-4 z-[90] sm:bottom-6 sm:right-6">
       <div className="inline-flex items-center gap-1 rounded-full border border-black/8 bg-white/90 p-1 shadow-[0_12px_36px_rgba(17,24,39,0.08)] backdrop-blur-sm">
         <button
           type="button"
           onClick={() => updateTheme("light")}
           aria-pressed={activeTheme === "light"}
-          className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] transition ${
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-[11px] font-medium uppercase tracking-[0.18em] transition ${
             activeTheme === "light"
               ? "bg-black text-white"
               : "text-[#6f645b] hover:bg-[#f7f7f4]"
@@ -41,7 +41,7 @@ export function ThemeToggle() {
           type="button"
           onClick={() => updateTheme("dark")}
           aria-pressed={activeTheme === "dark"}
-          className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] transition ${
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-[11px] font-medium uppercase tracking-[0.18em] transition ${
             activeTheme === "dark"
               ? "bg-black text-white"
               : "text-[#6f645b] hover:bg-[#f7f7f4]"
