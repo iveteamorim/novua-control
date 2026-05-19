@@ -433,13 +433,15 @@ function SignalEngine() {
   return (
     <section id="workflow" className="bg-[#f4f1eb] py-28 text-black">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
+        <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_660px] lg:items-center">
           <div>
             <div className="mb-5 text-xs uppercase tracking-[0.32em] text-[#b46021]">
               Deterministic before AI
             </div>
-            <h2 className="text-5xl font-medium leading-[0.96] tracking-[-0.06em] md:text-7xl">
-              From webhook to operational decision.
+            <h2 className="max-w-[620px] text-5xl font-medium leading-[0.92] tracking-[-0.065em] md:text-7xl lg:text-[94px]">
+              <span className="block">From webhook</span>
+              <span className="block">to operational</span>
+              <span className="block">decision.</span>
             </h2>
             <p className="mt-7 max-w-xl text-lg leading-8 text-black/58">
               AI can summarize the situation, but rules decide what becomes
@@ -448,8 +450,8 @@ function SignalEngine() {
             </p>
           </div>
 
-          <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_20px_80px_rgba(0,0,0,0.06)]">
-            <div className="grid gap-3 md:grid-cols-4">
+          <div className="justify-self-end rounded-[2.2rem] border border-black/10 bg-white p-8 shadow-[0_24px_80px_rgba(0,0,0,0.06)]">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <EngineStep
                 icon={<IconGitHub />}
                 title="Webhook"
@@ -471,11 +473,11 @@ function SignalEngine() {
                 text="assign owner"
               />
             </div>
-            <div className="mt-6 rounded-[1.5rem] bg-[#111213] p-5 text-white">
-              <div className="mb-4 text-xs uppercase tracking-[0.28em] text-white/35">
+            <div className="mt-8 rounded-[1.9rem] bg-[#111213] p-7 text-white">
+              <div className="mb-5 text-xs uppercase tracking-[0.32em] text-white/35">
                 Incident-ready evidence
               </div>
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-3">
                 <Evidence value="5" label="linked artifacts" />
                 <Evidence value="6" label="rules triggered" />
                 <Evidence value="18" label="audit entries" />
@@ -498,21 +500,25 @@ function EngineStep({
   text: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-black/10 bg-[#faf8f4] p-4">
-      <div className="mb-5 grid h-10 w-10 place-items-center rounded-xl bg-black text-white">
+    <div className="min-h-[216px] rounded-[1.7rem] border border-black/10 bg-[#fcfaf7] p-5">
+      <div className="mb-6 grid h-14 w-14 place-items-center rounded-[1.15rem] bg-black text-white">
         {icon}
       </div>
-      <div className="font-medium">{title}</div>
-      <div className="mt-2 text-sm text-black/50">{text}</div>
+      <div className="text-[1.05rem] font-semibold tracking-[-0.02em]">
+        {title}
+      </div>
+      <div className="mt-3 text-[15px] leading-8 text-black/50">{text}</div>
     </div>
   );
 }
 
 function Evidence({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[.045] p-4">
-      <div className="text-3xl font-medium tracking-[-0.04em]">{value}</div>
-      <div className="mt-1 text-xs uppercase tracking-[0.22em] text-white/35">
+    <div className="flex min-h-[158px] flex-col justify-between rounded-[1.7rem] border border-white/10 bg-white/[.05] p-5">
+      <div className="text-[3.35rem] font-medium leading-none tracking-[-0.06em]">
+        {value}
+      </div>
+      <div className="text-xs uppercase tracking-[0.26em] text-white/35">
         {label}
       </div>
     </div>
