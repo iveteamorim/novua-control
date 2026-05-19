@@ -237,6 +237,16 @@ html[data-theme="dark"] .home-reason-icon {
   color: #ffb26d !important;
 }
 
+html[data-theme="dark"] .ingestion-signal-card {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(251, 113, 133, 0.32) !important;
+}
+
+html[data-theme="dark"] .ingestion-signal-label,
+html[data-theme="dark"] .ingestion-signal-count {
+  color: #f8f1ea !important;
+}
+
 html[data-theme="dark"] .bg-\[\#fff8e8\],
 html[data-theme="dark"] .bg-\[\#fff6df\],
 html[data-theme="dark"] .bg-\[\#fff7e7\],

@@ -379,7 +379,7 @@ function FlowCard({
     <div
       className={`rounded-[1.55rem] border p-6 ${
         tone === "signal"
-          ? "border-rose-200 bg-rose-50/50"
+          ? "ingestion-signal-card border-rose-200 bg-rose-50/50"
           : "border-black/6 bg-white"
       }`}
     >
@@ -388,19 +388,33 @@ function FlowCard({
           <span
             className={`grid h-10 w-10 place-items-center rounded-full border ${
               tone === "signal"
-                ? "border-rose-200 bg-white text-rose-500"
+                ? "ingestion-signal-icon border-rose-200 bg-white text-rose-500"
                 : "border-black/6 bg-[#fbfaf7] text-amber-700"
             }`}
           >
             {icon}
           </span>
-          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#93867b]">
+          <p
+            className={`text-xs font-semibold uppercase tracking-[0.32em] ${
+              tone === "signal"
+                ? "ingestion-signal-label text-[#93867b]"
+                : "text-[#93867b]"
+            }`}
+          >
             {label}
           </p>
         </div>
 
         {count ? (
-          <span className="text-sm font-semibold text-[#17120f]">{count}</span>
+          <span
+            className={`text-sm font-semibold ${
+              tone === "signal"
+                ? "ingestion-signal-count text-[#17120f]"
+                : "text-[#17120f]"
+            }`}
+          >
+            {count}
+          </span>
         ) : null}
       </div>
 
