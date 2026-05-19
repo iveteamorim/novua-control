@@ -19,7 +19,7 @@ const timeline = [
 const landingChecks = [
   { name: "signals", pass: signals.length === 3 },
   { name: "timeline", pass: timeline.length === 4 },
-  { name: "pilot price", pass: "EUR 2,500".includes("2,500") },
+  { name: "team plan", pass: "EUR 199/mo".includes("199") },
 ];
 
 export default async function LandingPage() {
@@ -37,7 +37,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="mx-auto mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-4 py-2 text-sm text-white/60 backdrop-blur">
             <span className="h-2 w-2 rounded-full bg-[#d77b2f]" />
-            Release coordination layer for GitHub, Vercel and Linear
+            Deterministic release coordination for GitHub, Vercel, Linear and Slack
           </div>
 
           <h1 className="text-balance text-6xl font-medium leading-[0.92] tracking-[-0.07em] md:text-8xl lg:text-[112px]">
@@ -45,23 +45,24 @@ export default async function LandingPage() {
           </h1>
 
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/58 md:text-xl">
-            Novua Control turns scattered engineering events into operational
-            signals, ownership decisions and auditable release paths.
+            Novua Control turns scattered engineering events into deterministic
+            escalation paths, owner gaps, and auditable next actions before a
+            release stalls.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a
-              href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20pilot"
+            <Link
+              href="/sign-up"
               className="rounded-full bg-white px-6 py-3 font-medium text-black shadow-[0_0_40px_rgba(255,255,255,0.16)]"
             >
-              Request paid pilot
-            </a>
-            <Link
-              href={productHref}
+              Start workspace
+            </Link>
+            <a
+              href="mailto:contact@novua.digital?subject=Novua%20Control%20enterprise%20pilot"
               className="rounded-full border border-white/12 bg-white/[.04] px-6 py-3 font-medium text-white/82"
             >
-              View product trace
-            </Link>
+              Request enterprise pilot
+            </a>
           </div>
         </div>
 
@@ -102,7 +103,7 @@ function Nav({
           <a href="#product">Product</a>
           <a href="#workflow">Workflow</a>
           <a href="#pilot">Pilot</a>
-          <a href="mailto:iveteamorim@gmail.com?subject=Novua%20Control">
+          <a href="mailto:contact@novua.digital?subject=Novua%20Control">
             Contact
           </a>
         </div>
@@ -529,48 +530,96 @@ function PilotSection() {
   return (
     <section id="pilot" className="mx-auto max-w-7xl px-6 py-28 lg:px-8">
       <div className="overflow-hidden rounded-[2.3rem] border border-white/[.08] bg-white/[.035]">
-        <div className="grid lg:grid-cols-[1.2fr_.8fr]">
+        <div className="grid lg:grid-cols-[1fr_1.15fr]">
           <div className="p-8 md:p-12">
             <div className="mb-5 text-xs uppercase tracking-[0.32em] text-[#d77b2f]">
-              Paid pilot
+              Access model
             </div>
             <h2 className="max-w-2xl text-5xl font-medium leading-[0.98] tracking-[-0.06em] md:text-7xl">
-              Launch with one real release workflow.
+              Start self-serve. Bring us in when the workflow is complex.
             </h2>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-white/55">
-              Novua Control is currently onboarded directly with each team. We
-              configure the workflow, connect the sources, and tune the incident
-              model together.
+              Novua Control should feel like product infrastructure, not
+              consulting. Connect the core tools, create the first release path,
+              and use enterprise onboarding only for custom governance.
             </p>
-            <a
-              href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20pilot"
-              className="mt-9 inline-flex rounded-full bg-white px-6 py-3 font-medium text-black"
-            >
-              Request pilot
-            </a>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link
+                href="/sign-up"
+                className="inline-flex rounded-full bg-white px-6 py-3 font-medium text-black"
+              >
+                Start workspace
+              </Link>
+              <a
+                href="mailto:contact@novua.digital?subject=Novua%20Control%20enterprise%20pilot"
+                className="inline-flex rounded-full border border-white/12 px-6 py-3 font-medium text-white/82"
+              >
+                Discuss pilot
+              </a>
+            </div>
           </div>
 
-          <div className="border-t border-white/[.08] bg-[#d77b2f] p-8 text-black md:p-12 lg:border-l lg:border-t-0">
-            <div className="text-sm uppercase tracking-[0.28em] text-black/45">
-              4-week pilot
-            </div>
-            <div className="mt-4 text-7xl font-medium tracking-[-0.08em]">
-              EUR 2,500
-            </div>
-            <div className="mt-4 text-lg text-black/62">
-              fixed pilot engagement
-            </div>
-            <div className="mt-8 space-y-3 text-sm font-medium">
-              <div>✓ GitHub / Vercel / Linear setup</div>
-              <div>✓ One release workflow</div>
-              <div>✓ Incident console</div>
-              <div>✓ Audit trail and action flow</div>
-              <div>✓ 2–4 weeks onboarding support</div>
-            </div>
+          <div className="grid gap-3 border-t border-white/[.08] p-6 md:p-8 lg:border-l lg:border-t-0">
+            <PricingCard
+              label="Free sandbox"
+              price="Free"
+              description="1 workspace, GitHub-only release path, 30-day history."
+            />
+            <PricingCard
+              featured
+              label="Team"
+              price="EUR 199/mo"
+              description="GitHub, Vercel, Linear, Slack alerts, audit trail, owner rules."
+            />
+            <PricingCard
+              label="Enterprise pilot"
+              price="EUR 1.5k-5k"
+              description="Custom workflows, governance setup, rollout support."
+            />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function PricingCard({
+  label,
+  price,
+  description,
+  featured,
+}: {
+  label: string;
+  price: string;
+  description: string;
+  featured?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-[1.7rem] border p-5 ${
+        featured
+          ? "border-[#d77b2f]/45 bg-[#d77b2f] text-black"
+          : "border-white/[.08] bg-white/[.045] text-white"
+      }`}
+    >
+      <div
+        className={`text-xs uppercase tracking-[0.28em] ${
+          featured ? "text-black/45" : "text-white/38"
+        }`}
+      >
+        {label}
+      </div>
+      <div className="mt-3 text-4xl font-medium tracking-[-0.06em]">
+        {price}
+      </div>
+      <p
+        className={`mt-3 max-w-md text-sm leading-6 ${
+          featured ? "text-black/62" : "text-white/52"
+        }`}
+      >
+        {description}
+      </p>
+    </div>
   );
 }
 

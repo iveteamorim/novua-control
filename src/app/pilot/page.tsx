@@ -3,14 +3,14 @@ import Link from "next/link";
 export const metadata = {
   title: "Novua Control Pilot",
   description:
-    "Paid pilot for release blocker visibility across GitHub, Vercel, and Linear.",
+    "Enterprise onboarding for deterministic release escalation across GitHub, Vercel, Linear, and Slack.",
 };
 
 const includedItems = [
-  "One release workflow configured around GitHub, Vercel, and Linear",
+  "One release workflow configured around GitHub, Vercel, Linear, and Slack",
   "Blocked-release console with explicit owner, next action, and audit trail",
-  "Manual onboarding and workflow mapping with your team",
-  "Pilot support for incident tuning, escalation rules, and owner mapping",
+  "Custom workflow mapping with your team when self-serve setup is not enough",
+  "Escalation rule tuning, Slack alert routing, and owner mapping",
 ];
 
 const fitItems = [
@@ -29,8 +29,8 @@ const fitItems = [
 ];
 
 const notFitItems = [
-  "Teams looking for a self-serve analytics dashboard only",
-  "Organizations that need full multi-workspace SaaS onboarding immediately",
+  "Teams looking for another AI summary inbox",
+  "Organizations that need dozens of integrations before proving one release path",
   "Workflows with no clear release path, owners, or source systems yet",
 ];
 
@@ -43,7 +43,7 @@ const processSteps = [
   {
     label: "Week 2",
     title: "Connect and normalize signals",
-    body: "Bring GitHub, Vercel, and Linear signals into one incident model with explicit escalation logic.",
+    body: "Bring GitHub, Vercel, Linear, and Slack signals into one incident model with explicit escalation logic.",
   },
   {
     label: "Week 3",
@@ -69,17 +69,18 @@ export default function PilotPage() {
                   Novua Control
                 </span>
                 <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em] text-amber-700">
-                  Paid pilot
+                  Enterprise pilot
                 </span>
               </div>
 
               <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#17120f] sm:text-[3.25rem]">
-                Release blocker visibility for teams that already ship, but still coordinate by hand.
+                Enterprise onboarding for teams whose release paths are too expensive to coordinate by hand.
               </h1>
 
               <p className="max-w-3xl text-base leading-8 text-[#5f564e] sm:text-lg">
-                Novua Control is a manual pilot for teams that need one thing to become clear:
-                what cannot ship, who is missing, and what must happen next when a release path blocks.
+                Novua Control starts self-serve, but the enterprise pilot helps teams
+                formalize one critical release workflow: what cannot ship, who is
+                missing, and what must happen next before the path blocks.
               </p>
 
               <div className="flex flex-wrap gap-3 pt-1">
@@ -90,10 +91,10 @@ export default function PilotPage() {
                   Open console
                 </Link>
                 <a
-                  href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20pilot"
+                  href="mailto:contact@novua.digital?subject=Novua%20Control%20enterprise%20pilot"
                   className="inline-flex rounded-full border border-black/8 px-4 py-2 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-white"
                 >
-                  Request pilot walkthrough
+                  Request enterprise pilot
                 </a>
               </div>
             </div>
@@ -137,10 +138,10 @@ export default function PilotPage() {
               </div>
 
               <div className="grid items-start gap-3 rounded-[1.6rem] border border-black/6 bg-[#f7f7f4] p-4 sm:grid-cols-2">
-                <PilotFact label="Pilot length" value="4 weeks" />
+                <PilotFact label="Pilot length" value="2-4 weeks" />
                 <PilotFact label="Scope" value="1 release train" />
-                <PilotFact label="Integrations" value="GitHub + Vercel + Linear" />
-                <PilotFact label="Delivery" value="Manual onboarding" />
+                <PilotFact label="Integrations" value="GitHub + Vercel + Linear + Slack" />
+                <PilotFact label="Delivery" value="Workflow onboarding" />
               </div>
             </div>
           </div>
@@ -176,7 +177,7 @@ export default function PilotPage() {
           <section className="rounded-[1.8rem] border border-amber-300/45 bg-[linear-gradient(180deg,rgba(255,250,239,0.96),rgba(255,255,255,1)_26%)] p-5 shadow-[0_20px_56px_rgba(120,84,28,0.08)]">
             <SectionHeader
               eyebrow="Pilot offer"
-              title="A paid design-partner pilot, not a pretend self-serve SaaS."
+              title="Premium onboarding for workflows that need governance, reusable rules, and rollout support."
             />
 
             <div className="mt-5 rounded-[1.4rem] border border-amber-300/75 bg-[#fff1ca] p-5">
@@ -194,8 +195,8 @@ export default function PilotPage() {
             </div>
 
             <div className="mt-4 grid items-start gap-3 sm:grid-cols-2">
-              <PriceCard label="Setup" value="€1,500–€3,000" />
-              <PriceCard label="4-week pilot" value="€2,000+" />
+              <PriceCard label="Team plan" value="€199/mo" />
+              <PriceCard label="Enterprise onboarding" value="€1,500–€5,000" />
             </div>
           </section>
         </section>
@@ -265,17 +266,17 @@ export default function PilotPage() {
                 Next step
               </p>
               <h2 className="text-3xl font-semibold leading-tight">
-                If one release path is expensive enough to justify clarity, the pilot is the right entry point.
+                If one release path is expensive enough to justify governance, the enterprise pilot is the right entry point.
               </h2>
               <p className="text-sm leading-7 text-white/72">
-                Start with one workflow, one team, and one blocked path. If the signal is real,
-                the product should prove it quickly.
+                Start self-serve for the standard path. Bring us in when the release
+                model, owners, and escalation rules need to become reusable across a team.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <a
-                href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20pilot"
+                href="mailto:contact@novua.digital?subject=Novua%20Control%20enterprise%20pilot"
                 className="inline-flex rounded-full border border-white/18 bg-white px-4 py-2 text-sm font-medium text-[#17120f] transition hover:bg-[#f6f3ee]"
               >
                 Book a walkthrough
