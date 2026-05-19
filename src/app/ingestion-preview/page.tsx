@@ -108,7 +108,7 @@ async function IngestionPreviewContent({
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
-                  href="/"
+                  href="/app"
                   className="inline-flex rounded-full border border-black/8 bg-[#fbfaf7] px-5 py-2 text-xs font-medium uppercase tracking-[0.28em] text-[#6f645b] transition hover:border-black/15 hover:bg-black hover:text-white"
                 >
                   Back to control

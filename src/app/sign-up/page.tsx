@@ -18,7 +18,7 @@ export default async function SignUpPage({
         <div className="mx-auto max-w-xl rounded-[2rem] border border-black/6 bg-white p-8 shadow-[0_24px_80px_rgba(17,24,39,0.06)]">
           <p className="text-sm text-[#5f564e]">You already have an active session.</p>
           <Link
-            href="/"
+            href="/app"
             className="mt-5 inline-flex rounded-full bg-black px-5 py-3 text-sm font-medium text-white"
           >
             Go to control

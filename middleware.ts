@@ -5,7 +5,7 @@ const SESSION_COOKIE = "novua_control_session";
 
 function isProtectedPath(pathname: string) {
   return (
-    pathname === "/" ||
+    pathname === "/app" ||
     pathname === "/ingestion-preview" ||
     pathname === "/onboarding" ||
     pathname === "/settings" ||
@@ -32,7 +32,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (isAuthPath(pathname) && hasSession) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/app", request.url));
   }
 
   return NextResponse.next();
@@ -40,7 +40,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
+    "/app",
     "/sign-in",
     "/sign-up",
     "/onboarding",

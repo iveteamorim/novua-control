@@ -18,7 +18,7 @@ export default async function SignInPage({
         <div className="mx-auto max-w-xl rounded-[2rem] border border-black/6 bg-white p-8 shadow-[0_24px_80px_rgba(17,24,39,0.06)]">
           <p className="text-sm text-[#5f564e]">You are already signed in.</p>
           <Link
-            href="/"
+            href="/app"
             className="mt-5 inline-flex rounded-full bg-black px-5 py-3 text-sm font-medium text-white"
           >
             Go to control
@@ -57,7 +57,7 @@ export default async function SignInPage({
             </p>
           ) : null}
           <form action={signInAction} className="mt-6 space-y-4">
-            <input type="hidden" name="next" value={params.next ?? "/"} />
+            <input type="hidden" name="next" value={params.next ?? "/app"} />
             <Field label="Email" name="email" type="email" />
             <Field label="Password" name="password" type="password" />
             <button className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white">

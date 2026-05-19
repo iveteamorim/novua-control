@@ -12,7 +12,7 @@ export default async function OnboardingPage({
   const context = await getWorkspaceContext(session.userId, session.workspaceId);
 
   if (context?.workspace) {
-    redirect("/");
+    redirect("/app");
   }
 
   const params = await searchParams;

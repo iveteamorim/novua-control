@@ -84,10 +84,10 @@ export default function PilotPage() {
 
               <div className="flex flex-wrap gap-3 pt-1">
                 <Link
-                  href="/"
+                  href="/app"
                   className="inline-flex rounded-full border border-black/8 bg-black px-4 py-2 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]"
                 >
-                  View product
+                  Open console
                 </Link>
                 <a
                   href="mailto:iveteamorim@gmail.com?subject=Novua%20Control%20pilot"
@@ -281,10 +281,10 @@ export default function PilotPage() {
                 Book a walkthrough
               </a>
               <Link
-                href="/"
+                href="/sign-up"
                 className="inline-flex rounded-full border border-white/18 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/6"
               >
-                Open console
+                Start workspace
               </Link>
             </div>
           </div>

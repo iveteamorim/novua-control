@@ -25,7 +25,7 @@ function errorRedirect(path: string, message: string): never {
 export async function signInAction(formData: FormData) {
   const email = getString(formData, "email");
   const password = getString(formData, "password");
-  const next = getString(formData, "next") || "/";
+  const next = getString(formData, "next") || "/app";
 
   if (!email || !password) {
     errorRedirect("/sign-in", "Email and password are required.");
@@ -89,7 +89,7 @@ export async function signUpAction(formData: FormData) {
     );
   }
 
-  redirect("/");
+  redirect("/app");
 }
 
 export async function createWorkspaceAction(formData: FormData) {
@@ -113,7 +113,7 @@ export async function createWorkspaceAction(formData: FormData) {
     displayName: context?.user.displayName ?? session.displayName,
   });
 
-  redirect("/");
+  redirect("/app");
 }
 
 export async function signOutAction() {

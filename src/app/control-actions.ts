@@ -10,7 +10,7 @@ async function runIncidentAction(
   alertId: string,
   action: "assign_backend_owner" | "start_mitigation" | "resolve_incident",
 ) {
-  const session = await requireWorkspaceSession("/");
+  const session = await requireWorkspaceSession("/app");
   const dataset = await getControlDataset(session.workspaceId);
 
   await applyManualIncidentAction(dataset, {
@@ -19,7 +19,7 @@ async function runIncidentAction(
     actor: session.displayName,
   }, session.workspaceId);
 
-  revalidatePath("/");
+  revalidatePath("/app");
   revalidatePath(`/alerts/${alertId}`);
   revalidatePath("/ingestion-preview");
 }

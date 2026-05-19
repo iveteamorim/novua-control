@@ -53,7 +53,7 @@ export default async function AlertDetailPage({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-4">
               <Link
-                href="/"
+                href="/app"
                 className="inline-flex rounded-full border border-black/8 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.22em] text-[#6f645b] transition hover:border-black/15 hover:bg-black hover:text-white"
               >
                 Back to control
