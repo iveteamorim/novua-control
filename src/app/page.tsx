@@ -59,7 +59,7 @@ export default async function Home() {
     <main className="min-h-screen bg-[#f6f3ee] text-[#151311]">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <SessionBar session={session} />
-        <header className="overflow-hidden rounded-[2.2rem] border border-rose-200/80 bg-[linear-gradient(135deg,rgba(255,249,245,0.98),rgba(255,255,255,1)_42%)] shadow-[0_30px_90px_rgba(17,24,39,0.05)]">
+        <header className="home-hero overflow-hidden rounded-[2.2rem] border border-rose-200/80 bg-[linear-gradient(135deg,rgba(255,249,245,0.98),rgba(255,255,255,1)_42%)] shadow-[0_30px_90px_rgba(17,24,39,0.05)]">
           <div className="grid items-start xl:grid-cols-[minmax(0,1fr)_392px]">
             <div className="px-6 py-7 sm:px-7 sm:py-8 xl:px-10 xl:py-10">
               <div className="space-y-5">
@@ -122,7 +122,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <aside className="border-t border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,247,244,0.92))] px-6 py-7 sm:px-7 sm:py-8 xl:border-l xl:border-t-0 xl:px-8 xl:py-10">
+            <aside className="home-hero-rail border-t border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,247,244,0.92))] px-6 py-7 sm:px-7 sm:py-8 xl:border-l xl:border-t-0 xl:px-8 xl:py-10">
               <div className="rounded-[1.55rem] border border-rose-300/80 bg-white p-5 shadow-[0_14px_36px_rgba(225,29,72,0.07)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
