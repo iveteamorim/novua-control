@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +19,18 @@ export const metadata: Metadata = {
     "Operational execution intelligence for product and engineering teams.",
 };
 
+const themeInitScript = `
+  (function () {
+    try {
+      var savedTheme = localStorage.getItem("novua-theme");
+      var theme = savedTheme === "dark" || savedTheme === "light" ? savedTheme : "light";
+      document.documentElement.dataset.theme = theme;
+    } catch (error) {
+      document.documentElement.dataset.theme = "light";
+    }
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,10 +39,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-white text-[#151311]">
+        <ThemeToggle />
         {children}
       </body>
     </html>
