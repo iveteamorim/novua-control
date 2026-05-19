@@ -51,17 +51,17 @@ function NovuaSymbol() {
       <path
         d="M5.5 5.5V10.5C5.5 12.1 6.8 13.4 8.4 13.4H12.1C13.2 13.4 14.1 14.3 14.1 15.4V16.6"
         stroke="#17120f"
-        strokeWidth="2"
+        strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx="5.5" cy="5.5" r="2.5" fill="#17120f" />
-      <circle cx="5.5" cy="16.5" r="2.5" fill="#17120f" />
-      <circle cx="16.5" cy="16.5" r="2.7" fill="#f59e0b" />
+      <circle cx="5.5" cy="5.5" r="2.7" fill="#17120f" />
+      <circle cx="5.5" cy="16.5" r="2.7" fill="#17120f" />
+      <circle cx="16.5" cy="16.5" r="2.9" fill="#d89a38" />
       <path
         d="M8.8 11H13.8"
-        stroke="#f59e0b"
-        strokeWidth="2.4"
+        stroke="#d89a38"
+        strokeWidth="3.2"
         strokeLinecap="round"
       />
     </svg>
