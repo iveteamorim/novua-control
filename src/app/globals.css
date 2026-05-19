@@ -238,13 +238,13 @@ html[data-theme="dark"] .home-reason-icon {
 }
 
 html[data-theme="dark"] .ingestion-signal-card {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
   border-color: rgba(251, 113, 133, 0.32) !important;
 }
 
 html[data-theme="dark"] .ingestion-signal-label,
 html[data-theme="dark"] .ingestion-signal-count {
-  color: #f8f1ea !important;
+  color: #fff8f2 !important;
 }
 
 html[data-theme="dark"] .bg-\[\#fff8e8\],

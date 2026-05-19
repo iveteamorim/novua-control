@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
@@ -11,11 +12,16 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
+  const pathname = usePathname();
   const activeTheme = useSyncExternalStore(
     subscribeToTheme,
     getThemeSnapshot,
     getServerThemeSnapshot,
   );
+
+  if (pathname === "/") {
+    return null;
+  }
 
   function updateTheme(nextTheme: Theme) {
     applyTheme(nextTheme);
