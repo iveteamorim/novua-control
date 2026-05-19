@@ -27,7 +27,7 @@ export default async function LandingPage() {
   const productHref = session ? "/app" : "/sign-in";
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#08090a] text-white">
+    <main className="public-landing min-h-screen overflow-hidden bg-[#08090a] text-white">
       <Nav sessionHref={productHref} sessionLabel={session ? "Open app" : "Sign in"} />
 
       <section className="relative mx-auto max-w-7xl px-6 pb-20 pt-24 lg:px-8 lg:pt-32">

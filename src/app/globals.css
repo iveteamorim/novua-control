@@ -307,3 +307,46 @@ html[data-theme="dark"] ::selection {
   background: rgba(216, 154, 56, 0.28);
   color: #fff7ef;
 }
+
+/* The public landing has its own fixed visual direction. App theme state can
+   persist in localStorage, so keep the landing from inheriting app dark-mode
+   utility overrides. */
+html[data-theme="dark"] .public-landing.bg-\[\#08090a\] {
+  background-color: #08090a !important;
+}
+
+html[data-theme="dark"] .public-landing .bg-\[\#f4f1eb\] {
+  background-color: #f4f1eb !important;
+}
+
+html[data-theme="dark"] .public-landing .bg-white {
+  background-color: #ffffff !important;
+}
+
+html[data-theme="dark"] .public-landing .bg-\[\#fcfaf7\] {
+  background-color: #fcfaf7 !important;
+}
+
+html[data-theme="dark"] .public-landing .bg-\[\#111213\] {
+  background-color: #111213 !important;
+}
+
+html[data-theme="dark"] .public-landing .text-black {
+  color: #000000 !important;
+}
+
+html[data-theme="dark"] .public-landing .text-black\/58 {
+  color: rgb(0 0 0 / 0.58) !important;
+}
+
+html[data-theme="dark"] .public-landing .text-black\/50 {
+  color: rgb(0 0 0 / 0.5) !important;
+}
+
+html[data-theme="dark"] .public-landing .text-white {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .public-landing .text-white\/35 {
+  color: rgb(255 255 255 / 0.35) !important;
+}
