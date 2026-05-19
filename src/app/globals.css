@@ -153,6 +153,90 @@ html[data-theme="dark"] .home-hero-rail {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+html[data-theme="dark"] .home-blocked-panel,
+html[data-theme="dark"] .home-why-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(22, 18, 16, 0.96),
+    rgba(18, 15, 14, 0.98)
+  ) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28) !important;
+}
+
+html[data-theme="dark"] .home-action-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(48, 35, 17, 0.26),
+    rgba(21, 17, 15, 0.98) 28%
+  ) !important;
+  border-color: rgba(216, 154, 56, 0.28) !important;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32) !important;
+}
+
+html[data-theme="dark"] .home-release-gate {
+  background: linear-gradient(
+    180deg,
+    rgba(72, 27, 39, 0.24),
+    rgba(28, 20, 20, 0.98)
+  ) !important;
+  border-color: rgba(251, 113, 133, 0.28) !important;
+}
+
+html[data-theme="dark"] .home-next-move {
+  background: linear-gradient(
+    180deg,
+    rgba(120, 84, 28, 0.18),
+    rgba(31, 24, 18, 0.98)
+  ) !important;
+  border-color: rgba(245, 158, 11, 0.38) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+html[data-theme="dark"] .home-action-button-secondary {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-strong) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-theme="dark"] .home-action-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html[data-theme="dark"] .home-action-button-resolve {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #b8f2d4 !important;
+  border-color: rgba(52, 211, 153, 0.28) !important;
+}
+
+html[data-theme="dark"] .home-action-button-resolve:hover {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+html[data-theme="dark"] .home-owner-row {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .home-owner-row-critical {
+  background: rgba(120, 84, 28, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.34) !important;
+}
+
+html[data-theme="dark"] .home-reason-row {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-body) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-theme="dark"] .home-reason-icon {
+  background: rgba(240, 111, 28, 0.14) !important;
+  color: #ffb26d !important;
+}
+
 html[data-theme="dark"] .bg-\[\#fff8e8\],
 html[data-theme="dark"] .bg-\[\#fff6df\],
 html[data-theme="dark"] .bg-\[\#fff7e7\],

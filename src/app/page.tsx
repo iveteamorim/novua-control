@@ -190,7 +190,7 @@ export default async function Home() {
         </section>
 
         <section className="grid items-start gap-6 xl:grid-cols-12">
-          <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)] xl:col-span-7">
+          <section className="home-blocked-panel rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)] xl:col-span-7">
             <SectionHeader
               eyebrow="Blocked release"
               title="What cannot ship?"
@@ -223,7 +223,7 @@ export default async function Home() {
               />
             </div>
 
-            <div className="mt-4 rounded-[1.35rem] border border-rose-300/60 bg-[linear-gradient(180deg,rgba(255,248,244,0.98),rgba(247,247,244,0.96))] p-4">
+            <div className="home-release-gate mt-4 rounded-[1.35rem] border border-rose-300/60 bg-[linear-gradient(180deg,rgba(255,248,244,0.98),rgba(247,247,244,0.96))] p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.22em] text-[#8d8176]">
@@ -244,10 +244,10 @@ export default async function Home() {
             </div>
           </section>
 
-          <section className="rounded-[1.95rem] border border-amber-300/55 bg-[linear-gradient(180deg,rgba(255,251,241,0.98),rgba(255,255,255,1)_30%)] p-6 shadow-[0_22px_60px_rgba(120,84,28,0.08)] xl:col-span-5">
+          <section className="home-action-panel rounded-[1.95rem] border border-amber-300/55 bg-[linear-gradient(180deg,rgba(255,251,241,0.98),rgba(255,255,255,1)_30%)] p-6 shadow-[0_22px_60px_rgba(120,84,28,0.08)] xl:col-span-5">
             <SectionHeader eyebrow="Action required" title="Who should act now?" />
 
-            <div className="mt-6 rounded-[1.5rem] border border-amber-300/85 bg-[#fff6df] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <div className="home-next-move mt-6 rounded-[1.5rem] border border-amber-300/85 bg-[#fff6df] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <p className="text-xs uppercase tracking-[0.28em] text-orange-600">
                 Next move
               </p>
@@ -259,17 +259,17 @@ export default async function Home() {
 
             <div className="mt-5 flex flex-wrap gap-3">
               <form action={assignBackendOwnerAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-black/8 bg-black px-5 py-3 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
+                <button className="home-action-button home-action-button-primary inline-flex rounded-full border border-black/8 bg-black px-5 py-3 text-sm font-medium text-white transition hover:border-black hover:bg-[#17120f]">
                   Assign backend owner
                 </button>
               </form>
               <form action={startMitigationAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-black/8 bg-white px-5 py-3 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
+                <button className="home-action-button home-action-button-secondary inline-flex rounded-full border border-black/8 bg-white px-5 py-3 text-sm font-medium text-[#17120f] transition hover:border-black/15 hover:bg-[#f7f7f4]">
                   Start mitigation
                 </button>
               </form>
               <form action={resolveIncidentAction.bind(null, topAlert.id)}>
-                <button className="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
+                <button className="home-action-button home-action-button-resolve inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
                   Resolve incident
                 </button>
               </form>
@@ -295,7 +295,7 @@ export default async function Home() {
             </div>
           </section>
 
-          <section className="rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)] xl:col-span-7">
+          <section className="home-why-panel rounded-[1.8rem] border border-black/6 bg-white p-5 shadow-[0_16px_48px_rgba(17,24,39,0.04)] xl:col-span-7">
             <SectionHeader
               eyebrow="Why blocked"
               title="Why did the system escalate this?"
@@ -623,9 +623,9 @@ function OwnerRow({
 }) {
   return (
     <div
-      className={`rounded-[1.2rem] border px-4 py-4 ${
+      className={`home-owner-row rounded-[1.2rem] border px-4 py-4 ${
         critical
-          ? "border-amber-300/80 bg-white"
+          ? "home-owner-row-critical border-amber-300/80 bg-white"
           : "border-black/6 bg-white/82"
       }`}
     >
@@ -695,8 +695,8 @@ function ReasonRow({
   text: string;
 }) {
   return (
-    <div className="flex items-center gap-5 rounded-[1.25rem] border border-black/6 bg-[#f8f7f4] px-5 py-5 text-[#4f463f] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#fff0db] text-[#f06f1c]">
+    <div className="home-reason-row flex items-center gap-5 rounded-[1.25rem] border border-black/6 bg-[#f8f7f4] px-5 py-5 text-[#4f463f] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+      <span className="home-reason-icon grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#fff0db] text-[#f06f1c]">
         <ReasonIcon kind={icon} />
       </span>
       <p className="text-[1.05rem] leading-8">{text}</p>
