@@ -46,6 +46,10 @@ function buildStatus(
   return "connected";
 }
 
+function isValidGitHubRepository(repository: string) {
+  return /^[^@\s/]+\/[^@\s/]+$/.test(repository);
+}
+
 export async function saveWorkspaceIntegrationAction(formData: FormData) {
   const session = await requireWorkspaceSession("/settings/integrations");
   const providerValue = getString(formData, "provider");
@@ -66,12 +70,20 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
     const nextToken = getString(formData, "token");
     const token =
       nextToken || (existing?.provider === "github" ? existing.token : "");
-    const configured = Boolean(repository && token);
+    const hasValidRepository = isValidGitHubRepository(repository);
+    const configured = Boolean(hasValidRepository && token);
 
-    if (enabled && !configured) {
+    if (enabled && !repository) {
       redirectWithMessage(
         "error",
         "GitHub needs both a repository and token.",
+      );
+    }
+
+    if (enabled && repository && !hasValidRepository) {
+      redirectWithMessage(
+        "error",
+        "GitHub repository must use owner/repo format.",
       );
     }
 
@@ -86,7 +98,7 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
       updatedAt: now,
       lastValidatedAt: configured ? now : null,
       lastError:
-        enabled && !configured ? "Missing repository or token." : null,
+        enabled && !configured ? "Missing repository/token or invalid repository format." : null,
     };
   } else if (providerValue === "vercel") {
     const projectId = getString(formData, "projectId");

@@ -31,6 +31,22 @@ function getStatusTone(status?: WorkspaceIntegrationRecord["status"]) {
   return "border-stone-200 bg-stone-100 text-stone-600";
 }
 
+function isValidGitHubRepository(repository?: string | null) {
+  return Boolean(repository && /^[^@\s/]+\/[^@\s/]+$/.test(repository));
+}
+
+function getGitHubStatus(existing: WorkspaceIntegrationRecord | undefined) {
+  if (existing?.provider !== "github") {
+    return existing?.status;
+  }
+
+  if (existing.status === "connected" && !isValidGitHubRepository(existing.repository)) {
+    return "degraded";
+  }
+
+  return existing.status;
+}
+
 type IntegrationCardProps = {
   provider: SourceSystem;
   title: string;
@@ -151,7 +167,7 @@ export default async function IntegrationSettingsPage({
             provider="github"
             title="GitHub"
             description="Used for pull requests, reviewer ownership, stale reviews, and release-path dependency signals."
-            statusLabel={github?.status ?? "not configured"}
+            statusLabel={getGitHubStatus(github) ?? "not configured"}
             existing={github}
           >
             <div className="grid gap-4 md:grid-cols-2">
@@ -161,10 +177,21 @@ export default async function IntegrationSettingsPage({
                 </span>
                 <input
                   name="repository"
-                  defaultValue={github?.provider === "github" ? github.repository : ""}
+                  defaultValue={
+                    github?.provider === "github" && isValidGitHubRepository(github.repository)
+                      ? github.repository
+                      : ""
+                  }
                   placeholder="owner/repo"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
+                <p className="text-xs text-[#7e746b]">
+                  Use the GitHub repository slug, for example <span className="font-mono">owner/repo</span>.
+                </p>
               </label>
               <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-[0.24em] text-[#7e746b]">
@@ -176,6 +203,10 @@ export default async function IntegrationSettingsPage({
                   placeholder={maskSecret(
                     github?.provider === "github" ? github.token : null,
                   )}
+                  autoComplete="new-password"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
                 <p className="text-xs text-[#7e746b]">
@@ -201,6 +232,10 @@ export default async function IntegrationSettingsPage({
                   name="projectId"
                   defaultValue={vercel?.provider === "vercel" ? vercel.projectId : ""}
                   placeholder="prj_..."
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
               </label>
@@ -212,6 +247,10 @@ export default async function IntegrationSettingsPage({
                   name="teamId"
                   defaultValue={vercel?.provider === "vercel" ? (vercel.teamId ?? "") : ""}
                   placeholder="team_... (optional)"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
               </label>
@@ -225,6 +264,10 @@ export default async function IntegrationSettingsPage({
                   placeholder={maskSecret(
                     vercel?.provider === "vercel" ? vercel.token : null,
                   )}
+                  autoComplete="new-password"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
                 <p className="text-xs text-[#7e746b]">
@@ -250,6 +293,10 @@ export default async function IntegrationSettingsPage({
                   name="teamKey"
                   defaultValue={linear?.provider === "linear" ? linear.teamKey : ""}
                   placeholder="ENG"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
               </label>
@@ -263,6 +310,10 @@ export default async function IntegrationSettingsPage({
                   placeholder={maskSecret(
                     linear?.provider === "linear" ? linear.apiKey : null,
                   )}
+                  autoComplete="new-password"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className="w-full rounded-2xl border border-black/8 bg-[#fbfaf7] px-4 py-3 text-base outline-none transition focus:border-black/20"
                 />
                 <p className="text-xs text-[#7e746b]">
