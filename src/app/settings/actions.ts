@@ -90,6 +90,7 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
     }
 
     integration = {
+      ...(existing?.provider === "github" ? existing : {}),
       id: buildWorkspaceIntegrationId(session.workspaceId, providerValue),
       workspaceId: session.workspaceId,
       provider: "github",
@@ -121,6 +122,7 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
     }
 
     integration = {
+      ...(existing?.provider === "vercel" ? existing : {}),
       id: buildWorkspaceIntegrationId(session.workspaceId, providerValue),
       workspaceId: session.workspaceId,
       provider: "vercel",
@@ -151,6 +153,7 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
     }
 
     integration = {
+      ...(existing?.provider === "linear" ? existing : {}),
       id: buildWorkspaceIntegrationId(session.workspaceId, providerValue),
       workspaceId: session.workspaceId,
       provider: "linear",

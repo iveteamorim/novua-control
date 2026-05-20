@@ -214,19 +214,30 @@ export type GitHubIntegrationRecord = WorkspaceIntegrationBase & {
   provider: "github";
   repository: string;
   token: string;
+  tokenType?: string | null;
+  accountLogin?: string | null;
 };
 
 export type VercelIntegrationRecord = WorkspaceIntegrationBase & {
   provider: "vercel";
   token: string;
+  refreshToken?: string | null;
+  expiresAt?: string | null;
   projectId: string;
+  projectName?: string | null;
   teamId: string | null;
+  accountId?: string | null;
+  accountName?: string | null;
 };
 
 export type LinearIntegrationRecord = WorkspaceIntegrationBase & {
   provider: "linear";
   apiKey: string;
+  refreshToken?: string | null;
+  expiresAt?: string | null;
   teamKey: string;
+  teamName?: string | null;
+  accountName?: string | null;
 };
 
 export type WorkspaceIntegrationRecord =

@@ -1,5 +1,6 @@
 import { controlDataset } from "../fixtures";
 import { buildSeedSourceBundle, formatRelativeTime } from "../normalize";
+import { getFreshWorkspaceIntegration } from "@/lib/oauth/provider-tokens";
 import type {
   ControlArtifact,
   ControlEvent,
@@ -125,7 +126,8 @@ function mapDeploymentToEvent(deployment: VercelDeployment): ControlEvent {
 export async function getVercelBundle(
   integration?: WorkspaceIntegrationRecord | null,
 ): Promise<SourceBundle> {
-  const config = getVercelConfig(integration);
+  const activeIntegration = await getFreshWorkspaceIntegration(integration);
+  const config = getVercelConfig(activeIntegration);
 
   if (integration !== undefined && !config) {
     return buildEmptyVercelBundle();

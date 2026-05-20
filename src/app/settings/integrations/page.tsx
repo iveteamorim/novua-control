@@ -6,6 +6,7 @@ import { getWorkspaceContext } from "@/lib/auth/accounts";
 import { requireWorkspaceSession } from "@/lib/auth/session";
 import { getWorkspaceIntegrationMap } from "@/lib/control/store";
 import type { SourceSystem, WorkspaceIntegrationRecord } from "@/lib/control/types";
+import { oauthConfigured } from "@/lib/oauth/workspace-oauth";
 
 function maskSecret(value?: string | null) {
   if (!value) {
@@ -55,6 +56,7 @@ type IntegrationCardProps = {
   status?: WorkspaceIntegrationRecord["status"];
   children: ReactNode;
   existing: WorkspaceIntegrationRecord | undefined;
+  oauthEnabled: boolean;
 };
 
 function IntegrationCard({
@@ -65,7 +67,10 @@ function IntegrationCard({
   status,
   children,
   existing,
+  oauthEnabled,
 }: IntegrationCardProps) {
+  const oauthHref = `/api/oauth/${provider}/start`;
+
   return (
     <section className="rounded-[1.7rem] border border-black/6 bg-white p-6 shadow-[0_16px_48px_rgba(17,24,39,0.04)]">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -87,7 +92,26 @@ function IntegrationCard({
         </span>
       </div>
 
-      <form action={saveWorkspaceIntegrationAction} className="mt-6 space-y-4">
+      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-black/6 bg-[#fbfaf7] px-4 py-4">
+        <a
+          href={oauthEnabled ? oauthHref : undefined}
+          aria-disabled={!oauthEnabled}
+          className={`inline-flex rounded-full px-4 py-2 text-sm font-medium transition ${
+            oauthEnabled
+              ? "bg-black text-white hover:bg-[#17120f]"
+              : "cursor-not-allowed border border-black/8 bg-white text-[#8d8176]"
+          }`}
+        >
+          Connect with {title}
+        </a>
+        <p className="text-sm text-[#615850]">
+          {oauthEnabled
+            ? `OAuth stores the ${title} token server-side and auto-selects the first valid resource.`
+            : `${title} OAuth is not configured on this deployment yet.`}
+        </p>
+      </div>
+
+      <form action={saveWorkspaceIntegrationAction} className="mt-4 space-y-4">
         <input type="hidden" name="provider" value={provider} />
         <label className="flex items-center gap-3 rounded-2xl border border-black/6 bg-[#fbfaf7] px-4 py-3 text-sm text-[#3f3731]">
           <input
@@ -134,6 +158,9 @@ export default async function IntegrationSettingsPage({
   const github = integrationMap.github;
   const vercel = integrationMap.vercel;
   const linear = integrationMap.linear;
+  const githubOauthEnabled = oauthConfigured("github");
+  const vercelOauthEnabled = oauthConfigured("vercel");
+  const linearOauthEnabled = oauthConfigured("linear");
 
   return (
     <main className="min-h-screen bg-[#f6f3ee] px-4 py-5 text-[#151311] sm:px-6 lg:px-8">
@@ -172,7 +199,15 @@ export default async function IntegrationSettingsPage({
             statusLabel={getGitHubStatus(github) ?? "not configured"}
             status={getGitHubStatus(github)}
             existing={github}
+            oauthEnabled={githubOauthEnabled}
           >
+            {github?.provider === "github" && github.accountLogin ? (
+              <ConnectedSummary
+                label="Connected account"
+                value={`@${github.accountLogin}`}
+                detail={github.repository || "Repository not selected yet"}
+              />
+            ) : null}
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-[0.24em] text-[#7e746b]">
@@ -225,7 +260,15 @@ export default async function IntegrationSettingsPage({
             description="Used for deployment failures, rollout gates, retry pressure, and release-environment status."
             statusLabel={vercel?.status ?? "not configured"}
             existing={vercel}
+            oauthEnabled={vercelOauthEnabled}
           >
+            {vercel?.provider === "vercel" && (vercel.accountName || vercel.projectName) ? (
+              <ConnectedSummary
+                label="Connected account"
+                value={vercel.accountName || "Vercel account"}
+                detail={vercel.projectName || vercel.projectId || "Project not selected yet"}
+              />
+            ) : null}
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-[0.24em] text-[#7e746b]">
@@ -286,7 +329,15 @@ export default async function IntegrationSettingsPage({
             description="Used for issue ownership, blocked launch tickets, and downstream release coordination pressure."
             statusLabel={linear?.status ?? "not configured"}
             existing={linear}
+            oauthEnabled={linearOauthEnabled}
           >
+            {linear?.provider === "linear" && (linear.accountName || linear.teamName) ? (
+              <ConnectedSummary
+                label="Connected account"
+                value={linear.accountName || "Linear account"}
+                detail={linear.teamName || linear.teamKey || "Team not selected yet"}
+              />
+            ) : null}
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-[0.24em] text-[#7e746b]">
@@ -328,5 +379,25 @@ export default async function IntegrationSettingsPage({
         </div>
       </div>
     </main>
+  );
+}
+
+function ConnectedSummary({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-black/6 bg-[#f7f7f4] px-4 py-3">
+      <p className="text-xs font-medium uppercase tracking-[0.24em] text-[#7e746b]">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-semibold text-[#17120f]">{value}</p>
+      <p className="mt-1 text-sm text-[#615850]">{detail}</p>
+    </div>
   );
 }

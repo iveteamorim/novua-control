@@ -1,5 +1,6 @@
 import { controlDataset } from "../fixtures";
 import { buildSeedSourceBundle, buildSignalsForArtifacts, formatRelativeTime } from "../normalize";
+import { getFreshWorkspaceIntegration } from "@/lib/oauth/provider-tokens";
 import type {
   ControlArtifact,
   ControlEvent,
@@ -235,7 +236,8 @@ function mapLinearEvents(issue: LinearIssue, artifactId: string): ControlEvent[]
 export async function getLinearBundle(
   integration?: WorkspaceIntegrationRecord | null,
 ): Promise<SourceBundle> {
-  const config = getLinearConfig(integration);
+  const activeIntegration = await getFreshWorkspaceIntegration(integration);
+  const config = getLinearConfig(activeIntegration);
 
   if (integration !== undefined && !config) {
     return buildEmptyLinearBundle();
