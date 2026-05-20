@@ -45,9 +45,10 @@ export default async function LandingPage() {
           </h1>
 
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/58 md:text-xl">
-            Novua Control turns scattered engineering events into deterministic
-            escalation paths, owner gaps, and auditable next actions before a
-            release stalls.
+            Modern release coordination still happens manually across GitHub,
+            deployments, tickets, and chat. Control creates a deterministic
+            operational layer that detects blocked paths, missing owners, and
+            escalation risk before teams stall.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-3">
@@ -328,7 +329,9 @@ function LogoStrip() {
   return (
     <section className="border-y border-white/[.06] bg-white/[.02] py-8">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-4 px-6 text-sm text-white/42 lg:px-8">
-        <span className="mr-3 text-white/28">Designed to sit above</span>
+        <span className="mr-3 text-white/28">
+          Sits above the systems teams already use
+        </span>
         <Pill>GitHub</Pill>
         <Pill>Vercel</Pill>
         <Pill>Linear</Pill>
@@ -358,9 +361,9 @@ function ProblemVisual() {
           The data exists. The coordination does not.
         </h2>
         <p className="mt-7 max-w-lg text-lg leading-8 text-white/55">
-          Each tool knows one part of the failure. Control links them into a
-          release path, detects the ownership gap, and creates a stateful
-          incident.
+          Control does not replace the tools that already hold the data. It
+          links their signals into release paths, ownership gaps, and stateful
+          incidents the team can actually act on.
         </p>
       </div>
 
@@ -539,9 +542,10 @@ function PilotSection() {
               Start self-serve. Bring us in when the workflow is complex.
             </h2>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-white/55">
-              Novua Control should feel like product infrastructure, not
+              Novua Control is packaged as product infrastructure, not
               consulting. Connect the core tools, create the first release path,
-              and use enterprise onboarding only for custom governance.
+              and use enterprise onboarding only when custom governance is
+              needed.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
