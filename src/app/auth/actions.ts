@@ -89,7 +89,7 @@ export async function signUpAction(formData: FormData) {
     );
   }
 
-  redirect("/app");
+  redirect("/onboarding");
 }
 
 export async function createWorkspaceAction(formData: FormData) {
