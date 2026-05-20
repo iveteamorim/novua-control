@@ -66,8 +66,10 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
   let integration: WorkspaceIntegrationRecord;
 
   if (providerValue === "github") {
-    const repository = getString(formData, "repository");
-    const nextToken = getString(formData, "token");
+    const repository =
+      getString(formData, "githubRepository") || getString(formData, "repository");
+    const nextToken =
+      getString(formData, "githubToken") || getString(formData, "token");
     const token =
       nextToken || (existing?.provider === "github" ? existing.token : "");
     const hasValidRepository = isValidGitHubRepository(repository);
@@ -101,9 +103,12 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
         enabled && !configured ? "Missing repository/token or invalid repository format." : null,
     };
   } else if (providerValue === "vercel") {
-    const projectId = getString(formData, "projectId");
-    const teamId = getString(formData, "teamId") || null;
-    const nextToken = getString(formData, "token");
+    const projectId =
+      getString(formData, "vercelProjectId") || getString(formData, "projectId");
+    const teamId =
+      getString(formData, "vercelTeamId") || getString(formData, "teamId") || null;
+    const nextToken =
+      getString(formData, "vercelToken") || getString(formData, "token");
     const token =
       nextToken || (existing?.provider === "vercel" ? existing.token : "");
     const configured = Boolean(projectId && token);
@@ -130,8 +135,10 @@ export async function saveWorkspaceIntegrationAction(formData: FormData) {
         enabled && !configured ? "Missing project ID or token." : null,
     };
   } else {
-    const teamKey = getString(formData, "teamKey");
-    const nextApiKey = getString(formData, "apiKey");
+    const teamKey =
+      getString(formData, "linearTeamKey") || getString(formData, "teamKey");
+    const nextApiKey =
+      getString(formData, "linearApiKey") || getString(formData, "apiKey");
     const apiKey =
       nextApiKey || (existing?.provider === "linear" ? existing.apiKey : "");
     const configured = Boolean(teamKey && apiKey);

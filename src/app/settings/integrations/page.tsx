@@ -52,6 +52,7 @@ type IntegrationCardProps = {
   title: string;
   description: string;
   statusLabel: string;
+  status?: WorkspaceIntegrationRecord["status"];
   children: ReactNode;
   existing: WorkspaceIntegrationRecord | undefined;
 };
@@ -61,6 +62,7 @@ function IntegrationCard({
   title,
   description,
   statusLabel,
+  status,
   children,
   existing,
 }: IntegrationCardProps) {
@@ -79,7 +81,7 @@ function IntegrationCard({
           </p>
         </div>
         <span
-          className={`rounded-full border px-3 py-1.5 text-xs font-medium uppercase tracking-[0.2em] ${getStatusTone(existing?.status)}`}
+          className={`rounded-full border px-3 py-1.5 text-xs font-medium uppercase tracking-[0.2em] ${getStatusTone(status ?? existing?.status)}`}
         >
           {statusLabel}
         </span>
@@ -168,6 +170,7 @@ export default async function IntegrationSettingsPage({
             title="GitHub"
             description="Used for pull requests, reviewer ownership, stale reviews, and release-path dependency signals."
             statusLabel={getGitHubStatus(github) ?? "not configured"}
+            status={getGitHubStatus(github)}
             existing={github}
           >
             <div className="grid gap-4 md:grid-cols-2">
@@ -176,7 +179,7 @@ export default async function IntegrationSettingsPage({
                   Repository
                 </span>
                 <input
-                  name="repository"
+                  name="githubRepository"
                   defaultValue={
                     github?.provider === "github" && isValidGitHubRepository(github.repository)
                       ? github.repository
@@ -198,7 +201,7 @@ export default async function IntegrationSettingsPage({
                   Access token
                 </span>
                 <input
-                  name="token"
+                  name="githubToken"
                   type="password"
                   placeholder={maskSecret(
                     github?.provider === "github" ? github.token : null,
@@ -229,7 +232,7 @@ export default async function IntegrationSettingsPage({
                   Project ID
                 </span>
                 <input
-                  name="projectId"
+                  name="vercelProjectId"
                   defaultValue={vercel?.provider === "vercel" ? vercel.projectId : ""}
                   placeholder="prj_..."
                   autoComplete="off"
@@ -244,7 +247,7 @@ export default async function IntegrationSettingsPage({
                   Team ID
                 </span>
                 <input
-                  name="teamId"
+                  name="vercelTeamId"
                   defaultValue={vercel?.provider === "vercel" ? (vercel.teamId ?? "") : ""}
                   placeholder="team_... (optional)"
                   autoComplete="off"
@@ -259,7 +262,7 @@ export default async function IntegrationSettingsPage({
                   Access token
                 </span>
                 <input
-                  name="token"
+                  name="vercelToken"
                   type="password"
                   placeholder={maskSecret(
                     vercel?.provider === "vercel" ? vercel.token : null,
@@ -290,7 +293,7 @@ export default async function IntegrationSettingsPage({
                   Team key
                 </span>
                 <input
-                  name="teamKey"
+                  name="linearTeamKey"
                   defaultValue={linear?.provider === "linear" ? linear.teamKey : ""}
                   placeholder="ENG"
                   autoComplete="off"
@@ -305,7 +308,7 @@ export default async function IntegrationSettingsPage({
                   API key
                 </span>
                 <input
-                  name="apiKey"
+                  name="linearApiKey"
                   type="password"
                   placeholder={maskSecret(
                     linear?.provider === "linear" ? linear.apiKey : null,
